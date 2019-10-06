@@ -5,9 +5,19 @@ import (
 )
 
 func NewService() *iris.Application {
-	app := iris.New()
-	app.Get("/", func(ctx iris.Context) {
-		ctx.Text("Xin chao nhe! Day la trang tao account")
-	})
+	app := iris.Default()
+
+	// crs := func(ctx iris.Context) {
+	// 	ctx.Header("Access-Control-Allow-Origin", "*")
+	// 	ctx.Header("Access-Control-Allow-Credentials", "true")
+	// 	ctx.Header("Access-Control-Allow-Headers", "Access-Control-Allow-Origin,Content-Type, Authorization")
+	// 	ctx.Next()
+	// }
+
+	app.Logger().SetLevel("debug")
+	RegisterRoute(app)
+	// app.Get("/", func(ctx iris.Context) {
+	// 	ctx.Text("Xin chao nhe! Day la trang tao account")
+	// })
 	return app
 }

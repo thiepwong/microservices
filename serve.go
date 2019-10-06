@@ -24,33 +24,18 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/kataras/iris"
 	"github.com/thiepwong/microservices/services/accounts"
-	"github.com/thiepwong/microservices/services/notificators"
-	"github.com/urfave/cli"
 )
 
-var (
-	flags []cli.Flag
-	host  string
-	port  int
-)
-
-func init() {
-	flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "t,target,host",
-			Value: "localhost",
-			Usage: "Start IP/domain",
-		},
-		cli.IntFlag{
-			Name:  "p,port",
-			Value: 8080,
-			Usage: "Start port",
-		},
-	}
+func menuShow() {
+	fmt.Println("1. Account service")
+	fmt.Println("2. Notification service")
+	fmt.Println("3. Authentication service")
+	fmt.Println("4. Management service")
+	fmt.Println("5. Exit")
+	fmt.Println("Type start and name of service to start it, Type stop and name of service to stop it")
 }
 
 func alert() {
@@ -60,42 +45,68 @@ func alert() {
 }
 
 func main() {
-	alert()
+	menuShow()
+	startAccount()
 	for {
-		sample()
+		menuHandler()
 	}
 }
 
-func sample() {
-	var input int
-	n, err := fmt.Scanln(&input)
+func menuHandler() {
+	var cmd, service string
+	n, err := fmt.Scanf("%s %s", &cmd, &service)
 	if n < 1 || err != nil {
 		fmt.Println("invalid input")
 		return
 	}
-	switch input {
-	case 1:
-		fmt.Println("Starting account service ...")
-		go func() {
-			account := accounts.NewService()
-			account.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
-		}()
-		alert()
-	case 2:
-		fmt.Println("Starting notification service ...")
-		go func() {
-			notify := notificators.NewService()
-			notify.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
-		}()
-		alert()
-	case 3:
 
-		os.Exit(2)
-	default:
-		alert()
-		fmt.Println("def")
+	switch service {
+	case "account":
+		startAccount()
 	}
+
+	fmt.Println("Da nhan: " + cmd)
+	fmt.Println("Da nhan: " + service)
 }
+
+func startAccount() {
+	go func() {
+		serv := accounts.NewService()
+		serv.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+
+	}()
+}
+
+// func sample() {
+// 	var input int
+// 	n, err := fmt.Scanln(&input)
+// 	if n < 1 || err != nil {
+// 		fmt.Println("invalid input")
+// 		return
+// 	}
+// 	switch input {
+// 	case 1:
+// 		fmt.Println("Starting account service ...")
+// 		go func() {
+// 			account := accounts.NewService()
+// 			account.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+// 		}()
+// 		alert()
+// 	case 2:
+// 		fmt.Println("Starting notification service ...")
+// 		go func() {
+// 			notify := notificators.NewService()
+// 			notify.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
+// 		}()
+// 		alert()
+// 	case 3:
+
+// 		os.Exit(2)
+// 	default:
+// 		alert()
+// 		fmt.Println("def")
+// 	}
+// }
 
 // func main() {
 // 	app := cli.NewApp()
@@ -114,17 +125,17 @@ func sample() {
 // 	}
 // }
 
-func noArgs(c *cli.Context) error {
-	if c.NumFlags() < 2 {
-		cli.ShowAppHelp(c)
-		return cli.NewExitError("please set both flags", 2)
-	}
-	fmt.Printf("hacking %s:%d", host, port)
-	//	go func() {
-	account := accounts.NewService()
-	account.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
-	//}()
+// func noArgs(c *cli.Context) error {
+// 	if c.NumFlags() < 2 {
+// 		cli.ShowAppHelp(c)
+// 		return cli.NewExitError("please set both flags", 2)
+// 	}
+// 	fmt.Printf("hacking %s:%d", host, port)
+// 	//	go func() {
+// 	account := accounts.NewService()
+// 	account.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+// 	//}()
 
-	return nil
+// 	return nil
 
-}
+// }
