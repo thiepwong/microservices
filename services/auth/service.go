@@ -1,6 +1,10 @@
 package auth
 
 import (
+	"encoding/json"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/thiepwong/microservices/common"
 )
 
@@ -20,6 +24,26 @@ func NewAuthService(repo AuthRepository, conf *common.Config) AuthService {
 }
 
 func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
+	res, err := s.repo.SignIn(signin)
+	if err != nil {
+		return nil, err
+	}
 
-	return s.repo.SignIn(signin)
+	var _res SignInModel
+
+	_data, err := json.Marshal(res)
+	err = json.Unmarshal(_data, &_res)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss": _res.Username,
+		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+	})
+
+	rsa, err := common.RsaConfigSetup("./1011.perm", "", "./pub.key")
+
+	tokenString, err := token.SignedString(rsa)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokenString, nil
 }

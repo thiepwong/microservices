@@ -5,13 +5,12 @@ import (
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
-	"github.com/thiepwong/smartid/pkg/logger"
 )
 
 func RegisterRoute(app *iris.Application, cfg *common.Config) {
 	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
 	if err != nil {
-		logger.LogErr.Println(err.Error())
+
 	}
 
 	//	mvcResult := controllers.NewMvcResult(nil)
