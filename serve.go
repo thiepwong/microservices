@@ -24,9 +24,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/thiepwong/microservices/common"
 
 	"github.com/kataras/iris"
 	"github.com/thiepwong/microservices/services/accounts"
+	"github.com/thiepwong/microservices/services/auth"
 )
 
 func menuShow() {
@@ -46,7 +50,11 @@ func alert() {
 
 func main() {
 	menuShow()
-	startAccount()
+	go func() {
+		startAccount()
+		startAuth()
+	}()
+
 	for {
 		menuHandler()
 	}
@@ -63,6 +71,9 @@ func menuHandler() {
 	switch service {
 	case "account":
 		startAccount()
+
+	case "auth":
+		startAuth()
 	}
 
 	fmt.Println("Da nhan: " + cmd)
@@ -71,8 +82,26 @@ func menuHandler() {
 
 func startAccount() {
 	go func() {
-		serv := accounts.NewService()
+		_cfgPath := "configs/account.yaml"
+		conf, es := common.LoadConfig(_cfgPath)
+		if es != nil {
+			os.Exit(10)
+		}
+		serv := accounts.NewService(conf)
 		serv.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+
+	}()
+}
+
+func startAuth() {
+	go func() {
+		_cfgPath := "configs/account.yaml"
+		conf, es := common.LoadConfig(_cfgPath)
+		if es != nil {
+			os.Exit(10)
+		}
+		serv := auth.NewService(conf)
+		serv.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }

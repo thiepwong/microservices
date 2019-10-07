@@ -2,9 +2,10 @@ package accounts
 
 import (
 	"github.com/kataras/iris"
+	"github.com/thiepwong/microservices/common"
 )
 
-func NewService() *iris.Application {
+func NewService(cfg *common.Config) *iris.Application {
 	app := iris.Default()
 
 	// crs := func(ctx iris.Context) {
@@ -15,7 +16,7 @@ func NewService() *iris.Application {
 	// }
 
 	app.Logger().SetLevel("debug")
-	RegisterRoute(app)
+	RegisterRoute(app, cfg)
 	// app.Get("/", func(ctx iris.Context) {
 	// 	ctx.Text("Xin chao nhe! Day la trang tao account")
 	// })

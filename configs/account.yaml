@@ -1,0 +1,30 @@
+Service:
+  Host: 192.168.1.129
+  Port: 8080
+  SSL: false
+  PrivateKey:
+  PublicKey:  
+
+Database:
+  Postgre:
+    Host: 171.244.49.164
+    Port: 5432
+    Username: postgres
+    Password: xoacdi!@#
+    DbName: spin_app
+    Schema:
+  Redis:
+  Mongo:
+    Host: 171.244.49.164
+    Port: 2688
+    Database: smartid
+    Username: admin
+    Password: azuasml123456sml
+    Auth: admin
+ 
+Option:
+  SmsUrl: http://171.244.49.164:3333/api/v1/
+  SmsApiToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTUElOIFYxIiwiaWF0IjoxNTQ1MjEwNDkwNzQxLCJleHAiOjE1NDUyNDY0OTA3NDEsInN5cyI6IlBBUktJTkcifQ.MnSeQKn34b8x-yoXnnndxw1FaQf2f1Z2XDsYgYqvmOUmF0rMVsK1lWDsDSGaVelZQ7lYW3o4aFvI7MrdFGTlxj0g333z_lHYoR2YapvZyAPseLfF7NHthE72JbcAd9L6ynyjGP5sBpjQGkt5o45dppnWZQj4_5GvetsrUeSZhMQ
+  FireBaseUrl: https://fcm.googleapis.com/fcm/send
+  FireBaseToken: key=AAAAtc-5Fto:APA91bFxm1mLGKf9rGaCDu-f6K8cWOqWEO8qR9XYdkwsi4Bng75y9XxeCY6rySPIzpY1EfveXlgWIzTfpnn49TNmjj2pzq7TlcVOuNVB5fu96cDtN59RSXHvEaqIyXHEOfiYHtaSoogm
+  

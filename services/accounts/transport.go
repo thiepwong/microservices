@@ -6,29 +6,25 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
+	"github.com/thiepwong/microservices/common/db"
+	"github.com/thiepwong/smartid/pkg/logger"
 )
 
-func RegisterRoute(app *iris.Application) {
-	// pg, err := datasources.GetPg(*config.Database.Postgre)
-	// if err != nil {
-	// 	logger.LogErr.Println(err.Error())
-	// 	os.Exit(2)
-	// }
+func RegisterRoute(app *iris.Application, cfg *common.Config) {
+	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
+	if err != nil {
+		logger.LogErr.Println(err.Error())
+	}
 
 	//	mvcResult := controllers.NewMvcResult(nil)
 
-	//Register Employee Controller
-	//	empRep := repositories.NewEmployeeRepository(pg)
-	id := "Da truyen vao"
-	empSrv := NewAccountService(id)
-	emp := mvc.New(app.Party("/accounts")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
-	emp.Register(empSrv)
-	emp.Handle(new(AccountRoute))
+	// Register Account Route
+	accRep := NewAccountReportsitory(mongdb, "accounts")
+	accSrv := NewAccountService(accRep, cfg)
+	acc := mvc.New(app.Party("/accounts")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
+	acc.Register(accSrv)
+	acc.Handle(new(AccountRoute))
 
-}
-
-var tst = func() {
-	fmt.Println("Da goi vao ham")
 }
 
 type AccountRoute struct {
@@ -39,6 +35,7 @@ type AccountRoute struct {
 func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
 	b.Handle("GET", "/profile/{id:string}", "GetProfile")
+	b.Handle("POST", "/register", "PostRegister")
 }
 
 func (r *AccountRoute) GetProfile(id string) {
@@ -48,4 +45,26 @@ func (r *AccountRoute) GetProfile(id string) {
 	}
 	fmt.Println(res)
 	r.Response(200, "Da gui thanh cong", res)
+}
+
+func (r *AccountRoute) PostRegister() {
+	var _registerModel RegisterModel
+	err := r.Ctx.ReadJSON(&_registerModel)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+
+	if _registerModel.Username == "" || _registerModel.Password == "" {
+		r.Response(428, "Username and Password is required!", nil)
+		return
+	}
+
+	res, e := r.Service.Register(&_registerModel)
+	if e != nil {
+		r.Response(500, e.Error(), nil)
+		return
+	}
+
+	r.Response(200, "", res)
 }
