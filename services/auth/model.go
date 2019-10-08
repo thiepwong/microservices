@@ -42,7 +42,7 @@ type SignInModel struct {
 	Username string `json:"username" bson:"username"`
 	Password string `json:"password" bson:"password"`
 	System   string `json:"system" bson:"system"`
-	Expired  int64  `json:"expired"`
+	Expired  int    `json:"expired"`
 }
 
 type ActivateModel struct {
