@@ -2,10 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-<<<<<<< HEAD
 	"errors"
-=======
->>>>>>> 0abfb91889b62dbb3bee1d1d27fe28883e19fb85
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
