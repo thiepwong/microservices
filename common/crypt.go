@@ -5,7 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+<<<<<<< HEAD
 	"errors"
+=======
+>>>>>>> 0abfb91889b62dbb3bee1d1d27fe28883e19fb85
 	"io/ioutil"
 	"log"
 
@@ -14,6 +17,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+<<<<<<< HEAD
 const (
 	Salt = 11
 )
@@ -23,6 +27,8 @@ var (
 	signKey   *rsa.PrivateKey
 )
 
+=======
+>>>>>>> 0abfb91889b62dbb3bee1d1d27fe28883e19fb85
 // Hash method
 func Hash(password string, salt int) (string, error) {
 
@@ -52,6 +58,7 @@ func PasswordCompare(rawPassword string, passwordHash string, salt int) bool {
 	return true
 }
 
+<<<<<<< HEAD
 func ReadPublicKey(file string) (*rsa.PublicKey, error) {
 	_file, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -80,6 +87,8 @@ func ReadPrivateKey(file string) (*rsa.PrivateKey, error) {
 
 }
 
+=======
+>>>>>>> 0abfb91889b62dbb3bee1d1d27fe28883e19fb85
 // RsaConfigSetup method
 func RsaConfigSetup(rsaPrivateKeyLocation, rsaPrivateKeyPassword string, rsaPublicKeyLocation string) (*rsa.PrivateKey, error) {
 	if rsaPrivateKeyLocation == "" {
@@ -89,6 +98,10 @@ func RsaConfigSetup(rsaPrivateKeyLocation, rsaPrivateKeyPassword string, rsaPubl
 
 	priv, err := ioutil.ReadFile(rsaPrivateKeyLocation)
 	if err != nil {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0abfb91889b62dbb3bee1d1d27fe28883e19fb85
 		privkey, err := GenRSA(1024)
 		if err != nil {
 			return nil, err
