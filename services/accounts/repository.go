@@ -26,7 +26,7 @@ func NewAccountReportsitory(db *mgo.Database, coll string) AccountRepository {
 }
 
 func (a *accountRepositoryContext) Register(data *RegisterModel) (interface{}, error) {
-	err := a.db.C("register").Insert(data)
+	err := a.db.C("registers").Insert(data)
 	if err != nil {
 		return nil, err
 	}

@@ -5,13 +5,12 @@ import (
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
-	"github.com/thiepwong/smartid/pkg/logger"
 )
 
 func RegisterRoute(app *iris.Application, cfg *common.Config) {
 	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
 	if err != nil {
-		logger.LogErr.Println(err.Error())
+
 	}
 
 	//	mvcResult := controllers.NewMvcResult(nil)
@@ -33,6 +32,7 @@ type AuthRoute struct {
 func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
 	b.Handle("POST", "/signin", "PostSignIn")
+	b.Handle("POST", "/activate", "PostActivate")
 }
 
 func (r *AuthRoute) PostSignIn() {
@@ -54,5 +54,26 @@ func (r *AuthRoute) PostSignIn() {
 		return
 	}
 
+	r.Response(200, "", res)
+}
+
+func (r *AuthRoute) PostActivate() {
+	var _activate ActivateModel
+	err := r.Ctx.ReadJSON(&_activate)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+
+	if _activate.Username == "" || _activate.ActivateCode == "" {
+		r.Response(428, "Username and activate code is required!", nil)
+		return
+	}
+
+	res, err := r.Service.Verify(&_activate)
+	if err != nil {
+		r.Response(500, err.Error(), nil)
+		return
+	}
 	r.Response(200, "", res)
 }

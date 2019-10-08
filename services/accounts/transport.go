@@ -7,13 +7,11 @@ import (
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
-	"github.com/thiepwong/smartid/pkg/logger"
 )
 
 func RegisterRoute(app *iris.Application, cfg *common.Config) {
 	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
 	if err != nil {
-		logger.LogErr.Println(err.Error())
 	}
 
 	//	mvcResult := controllers.NewMvcResult(nil)
@@ -34,12 +32,15 @@ type AccountRoute struct {
 
 func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
-	b.Handle("GET", "/profile/{id:string}", "GetProfile")
+	b.Handle("GET", "/profile", "GetProfile")
 	b.Handle("POST", "/register", "PostRegister")
 }
 
-func (r *AccountRoute) GetProfile(id string) {
-	res, e := r.Service.Profile(id)
+func (r *AccountRoute) GetProfile() {
+	id := r.Ctx.URLParam("id")
+	token := r.Ctx.URLParam("token")
+
+	res, e := r.Service.Profile(id, token)
 	if e != nil {
 		r.Ctx.Text("Da bi loi")
 	}
