@@ -4,13 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	uuid "github.com/satori/go.uuid"
 	"github.com/thiepwong/microservices/common"
 )
 
-// AccountService ...interface ...
+const (
+	node = "node001"
+)
+
+//AuthService interface
 type AuthService interface {
 	SignIn(*SignInModel) (interface{}, error)
 	Verify(activate *ActivateModel) (interface{}, error)
@@ -21,7 +27,7 @@ type authServiceImp struct {
 	conf *common.Config
 }
 
-// NewAccountService ...
+// NewAuthService method
 func NewAuthService(repo AuthRepository, conf *common.Config) AuthService {
 	return &authServiceImp{repo: repo, conf: conf}
 }
@@ -39,11 +45,22 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 
 	_data, err := json.Marshal(acc)
 	err = json.Unmarshal(_data, &acc)
-	token := jwt.NewWithClaims(jwt.SigningMethodRS512, jwt.MapClaims{
-		"iss": acc.Username,
-		"isd": acc.ID,
-		"iat": time.Now().Unix(),
-		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+	_iat := time.Now().Unix()
+	_exp := _iat
+
+	if signin.Expired > 0 {
+		_exp += int64(signin.Expired)
+	} else {
+		_exp += int64(60 * 60 * 24)
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss": node,
+		"act": acc.Username,
+		"sid": acc.ID,
+		"jit": strings.ReplaceAll(uuid.Must(uuid.NewV4()).String(), "-", ""),
+		"iat": _iat,
+		"exp": _exp,
+		"sys": signin.System,
 	})
 
 	fmt.Print(prof)
