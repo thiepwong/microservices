@@ -1,6 +1,7 @@
 package auth
 
 type Profile struct {
+        ID uint64 
 	FirstName string `json:"first_name" bson:"first_name"`
 	LastName  string `json:"last_name" bson:"last_name"`
 	FullName  string `json:"full_name" bson:"full_name"`
