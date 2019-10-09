@@ -56,7 +56,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"iss": node,
 		"act": acc.Username,
-		"sid": acc.ID,
+		"sid": acc.ProfileID,
 		"jit": strings.ReplaceAll(uuid.Must(uuid.NewV4()).String(), "-", ""),
 		"iat": _iat,
 		"exp": _exp,

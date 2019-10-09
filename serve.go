@@ -26,6 +26,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/thiepwong/microservices/services/notificators"
+
 	"github.com/thiepwong/microservices/common"
 
 	"github.com/kataras/iris"
@@ -53,6 +55,7 @@ func main() {
 	go func() {
 		startAccount()
 		startAuth()
+		startNotificator()
 	}()
 
 	for {
@@ -102,6 +105,19 @@ func startAuth() {
 		}
 		serv := auth.NewService(conf)
 		serv.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
+
+	}()
+}
+
+func startNotificator() {
+	go func() {
+		_cfgPath := "configs/account.yaml"
+		conf, es := common.LoadConfig(_cfgPath)
+		if es != nil {
+			os.Exit(10)
+		}
+		serv := notificators.NewService(conf)
+		serv.Run(iris.Addr(":8082"), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }

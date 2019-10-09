@@ -9,6 +9,10 @@ import (
 )
 
 type CfgRd struct {
+	Host     string `yaml:"Host"`
+	Port     int    `yaml:"Port"`
+	Database string `yaml:"Database"`
+	Password string `yaml:"Password"`
 }
 
 type CfgMg struct {
@@ -43,11 +47,19 @@ type Service struct {
 	PublicKey  string `yaml:"PublicKey"`
 }
 
+type MailSender struct {
+	Server   string `yaml:"Server"`
+	Port     int    `yaml:"Port"`
+	Email    string `yaml:"Email"`
+	Password string `yaml:"Password"`
+}
+
 type Option struct {
-	SmsUrl        string `yaml:"SmsUrl"`
-	SmsApiToken   string `yaml:"SmsApiToken"`
-	FireBaseUrl   string `yaml:"FireBaseUrl"`
-	FireBaseToken string `yaml:"FireBaseToken"`
+	SmsUrl        string      `yaml:"SmsUrl"`
+	SmsApiToken   string      `yaml:"SmsApiToken"`
+	FireBaseUrl   string      `yaml:"FireBaseUrl"`
+	FireBaseToken string      `yaml:"FireBaseToken"`
+	EmailSender   *MailSender `yaml:"EmailSender"`
 }
 
 type Config struct {
