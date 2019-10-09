@@ -67,5 +67,5 @@ func (r *AccountRoute) PostRegister() {
 		return
 	}
 
-	r.Response(200, "", res)
+	r.Response(200, "Register successful! Please verify the account to active Smart ID", res)
 }

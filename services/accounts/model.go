@@ -13,27 +13,25 @@ type Profile struct {
 }
 
 type RegisterModel struct {
-	ID             string          `json:"ID"  bson:"_id,omitempty" `
-	Username       string          `json:"username" bson:"username"`
-	Password       string          `json:"password" bson:"password"`
-	SocialNetwork  []SocialNetwork `json:"SocialNetwork" bson:"social_network"`
-	Profile        Profile         `json:"profile" bson:"profile"`
-	RegisteredDate int64           `json:"registered_date" bson:"registered_date"`
-	VerifyCode     string          `json:"verify_code" bson:"verify_code"`
-	VerifiedDate   int             `json:"verified_date" bson:"verified_date"`
+	ID             string  `json:"ID"  bson:"_id,omitempty" `
+	Username       string  `json:"username" bson:"username"`
+	Password       string  `json:"password" bson:"password"`
+	Profile        Profile `json:"profile" bson:"profile"`
+	RegisteredDate int64   `json:"registered_date" bson:"registered_date"`
+	VerifyCode     string  `json:"verify_code" bson:"verify_code"`
+	VerifiedDate   int     `json:"verified_date" bson:"verified_date"`
 }
 
-type SocialNetwork struct {
-	Network string `json:"network" bson:"network"`
-	Code    string `json:"code" bson:"code"`
-}
+// type SocialNetwork struct {
+// 	Network string `json:"network" bson:"network"`
+// 	Code    string `json:"code" bson:"code"`
+// }
 
-type AccountModel struct {
-	ID            int64           `json:"ID"  bson:"_id,omitempty" `
-	Username      string          `json:"username"  bson:"username"`
-	Password      string          `json:"password" bson:"password"`
-	SocialNetwork []SocialNetwork `json:"SocialNetwork" bson:"social_network"`
-	ActivatedDate int             `json:"activated_date" bson:"activated_date"`
-	Profile       Profile         `json:"profile" bson:"profile"`
-	Status        string          `json:"status" bson:"status"`
-}
+// type AccountModel struct {
+// 	ID            int64   `json:"ID"  bson:"_id,omitempty" `
+// 	Username      string  `json:"username"  bson:"username"`
+// 	Password      string  `json:"password" bson:"password"`
+// 	ActivatedDate int     `json:"activated_date" bson:"activated_date"`
+// 	Profile       Profile `json:"profile" bson:"profile"`
+// 	Status        string  `json:"status" bson:"status"`
+// }

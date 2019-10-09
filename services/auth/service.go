@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -26,7 +27,7 @@ func NewAuthService(repo AuthRepository, conf *common.Config) AuthService {
 }
 
 func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
-	acc, err := s.repo.SignIn(signin)
+	acc, prof, err := s.repo.SignIn(signin)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +46,8 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
 	})
 
+	fmt.Print(prof)
+
 	rsa, err := common.ReadPrivateKey("./1011.perm")
 
 	tokenString, err := token.SignedString(rsa)
@@ -53,7 +56,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 	}
 
 	response := &SignInResponse{
-		SmartID: acc.ID,
+		SmartID: acc.ProfileID,
 		Token:   tokenString,
 	}
 	return response, nil
@@ -87,17 +90,7 @@ func (s *authServiceImp) Verify(activate *ActivateModel) (interface{}, error) {
 		return nil, errors.New("Cannot create a Smart ID, please try again!")
 	}
 
-	var accountModel = AccountModel{
-		ID:            smartID,
-		Username:      _register.Username,
-		Password:      _register.Password,
-		SocialNetwork: _register.SocialNetwork,
-		ActivatedDate: time.Now().Unix(),
-		Profile:       _register.Profile,
-		Status:        1,
-	}
-
-	res, err := s.repo.CreateID(&accountModel)
+	res, err := s.repo.CreateID(_register, smartID)
 
 	return res, err
 }

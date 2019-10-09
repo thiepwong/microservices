@@ -30,14 +30,14 @@ func (a *accountRepositoryContext) Register(data *RegisterModel) (interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return true, nil
 }
 
 func (a *accountRepositoryContext) AccountValidate(username string) (interface{}, error) {
 	if username == "" {
 		return nil, errors.New("Username is required!")
 	}
-	var _account AccountModel
+	var _account RegisterModel
 	err := a.db.C("accounts").Find(bson.M{"username": username}).One(&_account)
 	return _account, err
 }

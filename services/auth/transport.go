@@ -30,8 +30,12 @@ type AuthRoute struct {
 }
 
 func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
-	//r.ApiSecure()
+	// sign in with normal method, using username and password
 	b.Handle("POST", "/signin", "PostSignIn")
+	// sign in with social network token
+	b.Handle("POST", "social-network-signin", "PostSocialSignIn")
+
+	// activate an register and create a smart id
 	b.Handle("POST", "/activate", "PostActivate")
 }
 
@@ -76,4 +80,8 @@ func (r *AuthRoute) PostActivate() {
 		return
 	}
 	r.Response(200, "", res)
+}
+
+func (r *AuthRoute) PostSocialSignIn() {
+
 }
