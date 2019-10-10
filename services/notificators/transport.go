@@ -31,19 +31,24 @@ type NotificatorRoute struct {
 func (r *NotificatorRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
 	b.Handle("POST", "/sendmail", "PostSendMail")
+	b.Handle("POST", "/sendsms", "PostSendSms")
 }
 
 func (r *NotificatorRoute) PostSendMail() {
 	_mail := &MailModel{}
 	err := r.Ctx.ReadJSON(_mail)
 	if err != nil {
-		r.Response(428, "Parammeters is invalid, please check it and try again!", nil)
+		r.Response(406, err.Error(), nil)
 		return
 	}
 
-	if _mail.Mail == "" || _mail.Content == "" {
+	if _mail.Mail == "" {
 		r.Response(428, "Parammeters is required, please input and submit again!", nil)
 		return
+	}
+
+	if _mail.Lang == "" {
+		_mail.Lang = "vi"
 	}
 
 	res, err := r.Service.SendEmail(_mail)
@@ -53,6 +58,29 @@ func (r *NotificatorRoute) PostSendMail() {
 	}
 
 	r.Response(200, "Sendmail successfully!", res)
+}
+
+func (r *NotificatorRoute) PostSendSms() {
+	_sms := &SmsModel{}
+	err := r.Ctx.ReadJSON(_sms)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+
+	if _sms.Mobile == "" {
+		r.Response(428, "Parammeters is required, please input and submit again!", nil)
+		return
+	}
+
+	res, err := r.Service.SendSMS(_sms)
+	if err != nil {
+		r.Response(500, err.Error(), nil)
+		return
+	}
+
+	r.Response(200, "Sms was sent successfully", res)
+
 }
 
 //	mvcResult := controllers.NewMvcResult(nil)

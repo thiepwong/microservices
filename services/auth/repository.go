@@ -55,6 +55,11 @@ func (a *authRepositoryContext) VerifyByEmail(email string, activateCode string)
 	if err != nil {
 		return nil, errors.New("Username not found!")
 	}
+
+	if _register.VerifyCode == "" {
+		return nil, errors.New("This account was activated before, please use forgoten password function!")
+	}
+
 	if _register.VerifyCode != activateCode {
 		return nil, errors.New("Activate code is not match, please try again or resend the activate code!")
 	}

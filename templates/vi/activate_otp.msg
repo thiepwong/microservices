@@ -1,0 +1,1 @@
+Smartlife: Kich hoat tai khoan SmartID voi OTP: %s, ma OTP se het han sau %d giay

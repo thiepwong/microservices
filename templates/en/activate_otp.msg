@@ -1,0 +1,1 @@
+Smartlife: Please confirm your profile with this OTP: %s, it will be expired after %d seconds

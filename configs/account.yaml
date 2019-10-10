@@ -13,10 +13,10 @@ Database:
     DbName: spin_app
     Schema:
   Redis:
-    Host: 171.244.49.164
+    Host: 103.101.162.65
     Port: 25355 
-    Password: Spincar429fb
-    Database: 6
+    Password: Esml429fb
+    Database: 9
   Mongo:
     Host: 171.244.49.164
     Port: 2688
@@ -25,8 +25,8 @@ Database:
     Password: azuasml123456sml
     Auth: admin
 Option:
-  SmsUrl: http://171.244.49.164:3333/api/v1/
-  SmsApiToken: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJTUElOIFYxIiwiaWF0IjoxNTQ1MjEwNDkwNzQxLCJleHAiOjE1NDUyNDY0OTA3NDEsInN5cyI6IlBBUktJTkcifQ.MnSeQKn34b8x-yoXnnndxw1FaQf2f1Z2XDsYgYqvmOUmF0rMVsK1lWDsDSGaVelZQ7lYW3o4aFvI7MrdFGTlxj0g333z_lHYoR2YapvZyAPseLfF7NHthE72JbcAd9L6ynyjGP5sBpjQGkt5o45dppnWZQj4_5GvetsrUeSZhMQ
+  SmsUrl: 
+  SmsApiToken: 
   FireBaseUrl: https://fcm.googleapis.com/fcm/send
   FireBaseToken: key=AAAAtc-5Fto:APA91bFxm1mLGKf9rGaCDu-f6K8cWOqWEO8qR9XYdkwsi4Bng75y9XxeCY6rySPIzpY1EfveXlgWIzTfpnn49TNmjj2pzq7TlcVOuNVB5fu96cDtN59RSXHvEaqIyXHEOfiYHtaSoogm
   EmailSender:
@@ -34,4 +34,10 @@ Option:
     Port: 587
     Email: no-reply@smartlifevn.com
     Password: 1q2w3e4r5t
-  
+  ActivateURL: http://localhost:8081/auth/activate
+SmsIris:
+  Host: https://smsapi2.irismedia.vn/
+  SignInRoute: oauth2/token
+  SendSmsRoute: api/Sms
+  Username: sms_spin
+  Password: 4utO-p@ck1ng.5PiNnN

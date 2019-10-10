@@ -14,6 +14,9 @@ type NotificatorRepository interface {
 	RemoveOTP(*OtpModel) (bool, error)
 	ReadOTP(key string) (string, error)
 	ReadMailActivatedCode(email string) (*RegisterModel, error)
+	ReadRegisterByUser(username string) (register *RegisterModel, err error)
+	ReadIrisToken() string
+	WriteIrisToken(token string, ttl time.Duration) (bool, error)
 }
 
 type notificatorRepositoryContext struct {
@@ -59,4 +62,29 @@ func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (regi
 
 	return register, nil
 
+}
+
+func (n *notificatorRepositoryContext) ReadRegisterByUser(username string) (register *RegisterModel, err error) {
+	err = n.db.C("registers").FindId(username).One(&register)
+	if err != nil {
+		return nil, err
+	}
+	return register, nil
+}
+
+func (n *notificatorRepositoryContext) ReadIrisToken() string {
+	val, err := n.redis.Client.Get("iris_sms_token").Result()
+	if err != nil {
+		return ""
+	}
+	return val
+}
+
+func (n *notificatorRepositoryContext) WriteIrisToken(token string, ttl time.Duration) (bool, error) {
+	err := n.redis.Client.Set("iris_sms_token", token, ttl*1000000000).Err()
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }

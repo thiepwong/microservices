@@ -57,7 +57,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		"iss": node,
 		"act": acc.Username,
 		"sid": acc.ProfileID,
-		"jit": strings.ReplaceAll(uuid.Must(uuid.NewV4()).String(), "-", ""),
+		"jit": strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1),
 		"iat": _iat,
 		"exp": _exp,
 		"sys": signin.System,

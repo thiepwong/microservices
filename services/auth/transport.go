@@ -36,7 +36,7 @@ func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("POST", "social-network-signin", "PostSocialSignIn")
 
 	// activate an register and create a smart id
-	b.Handle("POST", "/activate", "PostActivate")
+	b.Handle("GET", "/activate", "GetActivate")
 }
 
 func (r *AuthRoute) PostSignIn() {
@@ -61,13 +61,10 @@ func (r *AuthRoute) PostSignIn() {
 	r.Response(200, "", res)
 }
 
-func (r *AuthRoute) PostActivate() {
+func (r *AuthRoute) GetActivate() {
 	var _activate ActivateModel
-	err := r.Ctx.ReadJSON(&_activate)
-	if err != nil {
-		r.Response(406, err.Error(), nil)
-		return
-	}
+	_activate.Username = r.Ctx.URLParam("email")
+	_activate.ActivateCode = r.Ctx.URLParam("code")
 
 	if _activate.Username == "" || _activate.ActivateCode == "" {
 		r.Response(428, "Username and activate code is required!", nil)

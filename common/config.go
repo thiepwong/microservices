@@ -60,12 +60,22 @@ type Option struct {
 	FireBaseUrl   string      `yaml:"FireBaseUrl"`
 	FireBaseToken string      `yaml:"FireBaseToken"`
 	EmailSender   *MailSender `yaml:"EmailSender"`
+	ActivateURL   string      `yaml:"ActivateURL"`
 }
 
 type Config struct {
 	Database *CfgDb   `yaml:"Database"`
 	Service  *Service `yaml:"Service"`
 	Option   *Option  `yaml:"Option"`
+	SmsIris  IRIS     `yaml:"SmsIris"`
+}
+
+type IRIS struct {
+	Host         string `yaml:"Host"`
+	SignInRoute  string `yaml:"SignInRoute"`
+	SendSmsRoute string `yaml:"SendSmsRoute"`
+	Username     string `yaml:"Username"`
+	Password     string `yaml:"Password"`
 }
 
 func LoadConfig(cfgPath string) (*Config, error) {
