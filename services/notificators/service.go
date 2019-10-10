@@ -1,6 +1,7 @@
 package notificators
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -69,8 +70,6 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-
-		//	mail.Content = fmt.Sprintf("Day la ma so kich hoat cua he thong smart id %s cho tai khoan %s", res.VerifyCode, res.Username)
 		break
 	default:
 		break
@@ -139,7 +138,7 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 	case 2:
 
 		if sms.Content == "" {
-			return nil, errors.New("Content template is required!")
+			return nil, errors.New("Content template is required")
 		}
 
 		_, err := s.repo.ReadRegisterByUser(sms.Mobile)
@@ -157,24 +156,17 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 			return false, err
 		}
 		s.repo.SaveOTP(_otp.ID, _json, _otp.TTL)
-		return _sms, nil
+
+		res, err := smsSender(sms.Mobile, _sms, _irisToken, &s.conf.SmsIris)
+
+		return res, nil
 
 	case 3:
 		break
 
 	}
 
-	_json, err := json.Marshal(_otp)
-	if err != nil {
-		return false, err
-	}
-	// using sms microservice to send this otp
-	res, err := s.repo.SaveOTP(_otp.ID, string(_json), sms.TTL)
-	if err != nil {
-		return false, err
-	}
-
-	return res, nil
+	return nil, nil
 }
 
 func (s *notificatorServiceImpl) SendFirebase(channel string, title string, content string) (interface{}, error) {
@@ -238,20 +230,33 @@ func smsSignin(cfg *common.IRIS) (iris *IrisResponse, err error) {
 
 func smsSender(mobile string, content string, token string, cfg *common.IRIS) (interface{}, error) {
 
-	form := _url.Values{}
-	_msg := &Message{}
-	_msg.SmsId = fmt.Sprintf("%s-%d", mobile, time.Now().Unix())
-	_msg.PhoneNumber = mobile
-	_msg.ContentType = "30"
-	_msg.Content = content
+	_contentJSON := fmt.Sprintf(`{"Brandname": "%s",
+	"SendingList": [
+	{
+	"SmsId": "%s",
+	"PhoneNumber": "%s",
+	"Content": "%s",
+   "ContentType": "%s"
+	}
+	] 
+   }`, "SMARTLIFE", fmt.Sprintf("%s-%d", mobile, time.Now().Unix()), mobile, content, "30")
 
-	var _sendingList []Message
-	_sendingList = append(_sendingList, *_msg)
-	fmt.Printf("%v", _sendingList)
-	form.Add("Brandname", "SPIN")
-	form.Add("SendingList", fmt.Sprintf("%v", _sendingList))
+	//bytesRepresentation, err := json.Marshal(message)
+
+	// form := _url.Values{}
+	// _msg := &Message{}
+	// _msg.SmsId = fmt.Sprintf("%s-%d", mobile, time.Now().Unix())
+	// _msg.PhoneNumber = mobile
+	// _msg.ContentType = "30"
+	// _msg.Content = content
+
+	// var _sendingList []Message
+	// _sendingList = append(_sendingList, *_msg)
+	// fmt.Printf("%v", _sendingList)
+	// form.Add("Brandname", "SPIN")
+	// form.Add("SendingList", fmt.Sprintf("%v", _sendingList))
 	url := fmt.Sprintf("%s%s", cfg.Host, cfg.SendSmsRoute)
-	req, e := http.NewRequest("POST", url, strings.NewReader(form.Encode()))
+	req, e := http.NewRequest("POST", url, bytes.NewBuffer([]byte(_contentJSON)))
 	if e != nil {
 		return nil, errors.New("Cannot connect SMS server")
 	}
