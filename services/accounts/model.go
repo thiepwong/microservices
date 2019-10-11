@@ -1,6 +1,7 @@
 package accounts
 
 type Profile struct {
+	ID        uint64 `json:"id"  bson:"_id,omitempty" `
 	FirstName string `json:"first_name" bson:"first_name"`
 	LastName  string `json:"last_name" bson:"last_name"`
 	FullName  string `json:"full_name" bson:"full_name"`
@@ -22,16 +23,28 @@ type RegisterModel struct {
 	VerifiedDate   int     `json:"verified_date" bson:"verified_date"`
 }
 
-// type SocialNetwork struct {
-// 	Network string `json:"network" bson:"network"`
-// 	Code    string `json:"code" bson:"code"`
-// }
+type UserModel struct {
+	ID            string `json:"id"  bson:"_id,omitempty" `
+	Username      string `json:"username"  bson:"username"`
+	Password      string `json:"password" bson:"password"`
+	ProfileID     uint64 `json:"profile_id" bson:"profile_id"`
+	ActivatedDate int64  `json:"activated_date" bson:"activated_date"`
+	Status        int    `json:"status" bson:"status"`
+}
 
-// type AccountModel struct {
-// 	ID            int64   `json:"ID"  bson:"_id,omitempty" `
-// 	Username      string  `json:"username"  bson:"username"`
-// 	Password      string  `json:"password" bson:"password"`
-// 	ActivatedDate int     `json:"activated_date" bson:"activated_date"`
-// 	Profile       Profile `json:"profile" bson:"profile"`
-// 	Status        string  `json:"status" bson:"status"`
-// }
+type AuthUpdate struct {
+	SID      uint64 `json:"smart_id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Mobile   string `json:"mobile"`
+}
+
+type EmailProfileModel struct {
+	ID       string `json:"id" bson:"_id,omitempty"`
+	SID      uint64 `json:"sid" bson:"sid"`
+	Code     string `json:"code" bson:"code"`
+	FullName string `json:"full_name" bson:"full_name"`
+	Username string `json:"username" bson:"username"`
+	Email    string `json:"email" bson:"email"`
+	Used     bool   `json:"used" bson:"used"`
+}

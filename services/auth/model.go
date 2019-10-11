@@ -1,7 +1,9 @@
 package auth
 
+import "time"
+
 type Profile struct {
-        ID uint64 
+	ID        uint64
 	FirstName string `json:"first_name" bson:"first_name"`
 	LastName  string `json:"last_name" bson:"last_name"`
 	FullName  string `json:"full_name" bson:"full_name"`
@@ -92,4 +94,15 @@ type ProfileModel struct {
 	Avatar    string `json:"avatar" bson:"avatar"`
 	Mobile    string `json:"mobile" bson:"mobile"`
 	Email     string `json:"email" bson:"email"`
+}
+
+type OtpModel struct {
+	ID     string        `json:"id"`
+	Mobile string        `json:"mobile"`
+	TTL    time.Duration `json:"ttl"`
+}
+
+type UpdateContact struct {
+	Contact string `json:"contact"`
+	Code    string `json:"code"`
 }

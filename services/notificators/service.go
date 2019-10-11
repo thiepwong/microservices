@@ -1,6 +1,7 @@
 package notificators
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -43,6 +44,30 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 	r = common.NewRequest([]string{mail.Mail}, mail.Subject, mail.Content, _host, s.conf.Option.EmailSender.Email, auth)
 
 	switch mail.Type {
+
+	case 3:
+		res, err := s.repo.ReadMailPool(mail.Mail)
+		if err != nil {
+			return false, errors.New("This email is not found in system")
+		}
+
+		templateData := struct {
+			FullName string
+			SID      uint64
+			Email    string
+			URL      string
+		}{
+			FullName: res.FullName,
+			SID:      res.SID,
+			Email:    res.Email,
+			URL:      fmt.Sprintf("%s?contact=%s&code=%s", s.conf.Option.UpdateContactURL, res.Email, res.Code),
+		}
+		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/verify_email.html", mail.Lang), templateData)
+		if err != nil {
+			return false, err
+		}
+
+		break
 	case 5:
 		res, err := s.repo.ReadMailActivatedCode(mail.Mail)
 		if err != nil {
@@ -53,9 +78,6 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 			return false, errors.New("This account is activated before!")
 		}
 
-		if err != nil {
-			return false, errors.New("Template not found!")
-		}
 		templateData := struct {
 			FullName string
 			Username string
@@ -63,14 +85,12 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 		}{
 			FullName: res.Profile.FullName,
 			Username: res.Username,
-			URL:      fmt.Sprintf("%s?email=%s&code=%s", s.conf.Option.ActivateURL, res.Username, res.VerifyCode),
+			URL:      fmt.Sprintf("%s?username=%s&code=%s", s.conf.Option.ActivateURL, res.Username, res.VerifyCode),
 		}
 		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
 		if err != nil {
 			return false, err
 		}
-
-		//	mail.Content = fmt.Sprintf("Day la ma so kich hoat cua he thong smart id %s cho tai khoan %s", res.VerifyCode, res.Username)
 		break
 	default:
 		break
@@ -85,9 +105,8 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 
 func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 
-	_irisToken := s.repo.ReadIrisToken()
+	_irisToken := s.repo.ReadIrisToken(s.conf.SmsIris.Brandname)
 	if _irisToken == "" {
-
 		// Sign In and save to Redis
 		_iris, err := smsSignin(&s.conf.SmsIris)
 		if err != nil {
@@ -95,27 +114,24 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 		}
 
 		_irisToken = _iris.AccessToken
-		s.repo.WriteIrisToken(_irisToken, _iris.Expired)
-
-		return _iris, nil
+		s.repo.WriteIrisToken(s.conf.SmsIris.Brandname, _irisToken, _iris.Expired)
 	}
 
 	// Check Send SMS type
 	// 1 => Created OTP then send it with default template
 	// 2 => Created OTP then send it with custom template
-	// 3 => Send a normal sms without any OTP
+	// 3 => Send a normal sms without any OTP for registered member
+	// 4 => Send to any one with any content
 	var _otp *OtpModel
 	if sms.Lang == "" {
 		sms.Lang = "vi"
 	}
 	switch sms.Type {
-
 	case 1:
 		_, err := s.repo.ReadRegisterByUser(sms.Mobile)
 		if err != nil {
 			return nil, errors.New("This mobile number is not registered for SmartID")
 		}
-
 		if sms.TTL == 0 {
 			sms.TTL = 120
 		}
@@ -133,20 +149,20 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 		s.repo.SaveOTP(_otp.ID, _json, _otp.TTL)
 
 		res, err := smsSender(sms.Mobile, _sms, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
 
 		return res, nil
 
 	case 2:
-
 		if sms.Content == "" {
-			return nil, errors.New("Content template is required!")
+			return nil, errors.New("Content template is required")
 		}
-
 		_, err := s.repo.ReadRegisterByUser(sms.Mobile)
 		if err != nil {
 			return nil, errors.New("This mobile number is not registered for SmartID")
 		}
-
 		if sms.TTL == 0 {
 			sms.TTL = 120
 		}
@@ -157,24 +173,42 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 			return false, err
 		}
 		s.repo.SaveOTP(_otp.ID, _json, _otp.TTL)
-		return _sms, nil
+
+		res, err := smsSender(sms.Mobile, _sms, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
 
 	case 3:
-		break
+		if sms.Content == "" {
+			return nil, errors.New("Content is required!")
+		}
 
+		_, err := s.repo.ReadRegisterByUser(sms.Mobile)
+		if err != nil {
+			return nil, errors.New("This mobile number is not registered for SmartID")
+		}
+
+		res, err := smsSender(sms.Mobile, sms.Content, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+
+	case 4:
+		if sms.Content == "" {
+			return nil, errors.New("Content is required!")
+		}
+		res, err := smsSender(sms.Mobile, sms.Content, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
 	}
 
-	_json, err := json.Marshal(_otp)
-	if err != nil {
-		return false, err
-	}
-	// using sms microservice to send this otp
-	res, err := s.repo.SaveOTP(_otp.ID, string(_json), sms.TTL)
-	if err != nil {
-		return false, err
-	}
-
-	return res, nil
+	return nil, nil
 }
 
 func (s *notificatorServiceImpl) SendFirebase(channel string, title string, content string) (interface{}, error) {
@@ -203,7 +237,7 @@ func sendMail(email string, subject string, content string, mailConf *common.Mai
 	return true, nil
 }
 
-func smsSignin(cfg *common.IRIS) (iris *IrisResponse, err error) {
+func smsSignin(cfg *common.IRIS) (iris *IrisSignInResponse, err error) {
 
 	form := _url.Values{}
 	form.Add("grant_type", "password")
@@ -225,7 +259,7 @@ func smsSignin(cfg *common.IRIS) (iris *IrisResponse, err error) {
 	}
 
 	_body, err := ioutil.ReadAll(response.Body)
-	var _res *IrisResponse = &IrisResponse{}
+	var _res *IrisSignInResponse = &IrisSignInResponse{}
 
 	err = json.Unmarshal(_body, _res)
 
@@ -237,21 +271,23 @@ func smsSignin(cfg *common.IRIS) (iris *IrisResponse, err error) {
 }
 
 func smsSender(mobile string, content string, token string, cfg *common.IRIS) (interface{}, error) {
+	var _msg SenderModel = SenderModel{
+		Brandname: cfg.Brandname,
+		SendingList: []Message{Message{
+			SmsId:       fmt.Sprintf("%s-%d", mobile, time.Now().Unix()),
+			PhoneNumber: mobile,
+			Content:     content,
+			ContentType: "30",
+		}},
+	}
 
-	form := _url.Values{}
-	_msg := &Message{}
-	_msg.SmsId = fmt.Sprintf("%s-%d", mobile, time.Now().Unix())
-	_msg.PhoneNumber = mobile
-	_msg.ContentType = "30"
-	_msg.Content = content
+	_msgByte, err := json.Marshal(_msg)
+	if err != nil {
+		return nil, err
+	}
 
-	var _sendingList []Message
-	_sendingList = append(_sendingList, *_msg)
-	fmt.Printf("%v", _sendingList)
-	form.Add("Brandname", "SPIN")
-	form.Add("SendingList", fmt.Sprintf("%v", _sendingList))
 	url := fmt.Sprintf("%s%s", cfg.Host, cfg.SendSmsRoute)
-	req, e := http.NewRequest("POST", url, strings.NewReader(form.Encode()))
+	req, e := http.NewRequest("POST", url, bytes.NewBuffer(_msgByte))
 	if e != nil {
 		return nil, errors.New("Cannot connect SMS server")
 	}
@@ -266,16 +302,16 @@ func smsSender(mobile string, content string, token string, cfg *common.IRIS) (i
 	}
 
 	_body, err := ioutil.ReadAll(response.Body)
-	var _res *IrisResponse = &IrisResponse{}
-
-	fmt.Print(string(_body))
+	var _res *IrisSentResponse = &IrisSentResponse{}
 
 	err = json.Unmarshal(_body, _res)
 
 	if err != nil {
 		return nil, err
 	}
-
+	if _res.Code != "201" {
+		return nil, errors.New(_res.Message)
+	}
 	return _res, nil
 
 }

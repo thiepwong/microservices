@@ -1,8 +1,11 @@
 package auth
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/thiepwong/microservices/common/db"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -20,15 +23,14 @@ type AuthRepository interface {
 }
 
 type authRepositoryContext struct {
-	db *mgo.Database
-
-	collection string
+	db    *mgo.Database
+	redis *db.Redis
 }
 
-func NewAuthRepository(db *mgo.Database, coll string) AuthRepository {
+func NewAuthRepository(db *mgo.Database, redis *db.Redis) AuthRepository {
 	return &authRepositoryContext{
-		db:         db,
-		collection: coll,
+		db:    db,
+		redis: redis,
 	}
 }
 
@@ -67,8 +69,23 @@ func (a *authRepositoryContext) VerifyByEmail(email string, activateCode string)
 	return &_register, nil
 }
 
-func (a *authRepositoryContext) VerifyBySms(mobile string, otpCode string) (*RegisterModel, error) {
-	return nil, nil
+func (a *authRepositoryContext) VerifyBySms(mobile string, otpCode string) (register *RegisterModel, err error) {
+	val, err := a.redis.Client.Get(otpCode).Result()
+	if err != nil {
+		return nil, err
+	}
+	var _otpObject OtpModel
+	json.Unmarshal([]byte(val), &_otpObject)
+	if _otpObject.Mobile != mobile {
+		return nil, errors.New("OTP is invalid!")
+	}
+
+	err = a.db.C("registers").FindId(mobile).One(&register)
+	if err != nil {
+		return nil, errors.New("Username was not registered")
+	}
+	_ = a.redis.Client.Set(otpCode, _otpObject, 0).Err()
+	return register, nil
 }
 
 func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID uint64) (*UserProfile, error) {

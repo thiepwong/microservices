@@ -55,12 +55,13 @@ type MailSender struct {
 }
 
 type Option struct {
-	SmsUrl        string      `yaml:"SmsUrl"`
-	SmsApiToken   string      `yaml:"SmsApiToken"`
-	FireBaseUrl   string      `yaml:"FireBaseUrl"`
-	FireBaseToken string      `yaml:"FireBaseToken"`
-	EmailSender   *MailSender `yaml:"EmailSender"`
-	ActivateURL   string      `yaml:"ActivateURL"`
+	SmsUrl           string      `yaml:"SmsUrl"`
+	SmsApiToken      string      `yaml:"SmsApiToken"`
+	FireBaseUrl      string      `yaml:"FireBaseUrl"`
+	FireBaseToken    string      `yaml:"FireBaseToken"`
+	EmailSender      *MailSender `yaml:"EmailSender"`
+	ActivateURL      string      `yaml:"ActivateURL"`
+	UpdateContactURL string      `yaml:"UpdateContactURL"`
 }
 
 type Config struct {
@@ -76,6 +77,7 @@ type IRIS struct {
 	SendSmsRoute string `yaml:"SendSmsRoute"`
 	Username     string `yaml:"Username"`
 	Password     string `yaml:"Password"`
+	Brandname    string `yaml:"Brandname"`
 }
 
 func LoadConfig(cfgPath string) (*Config, error) {

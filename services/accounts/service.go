@@ -14,6 +14,8 @@ type AccountService interface {
 	Register(*RegisterModel) (interface{}, error)
 	Update(profile string) (interface{}, error)
 	Profile(id string, token string) (string, error)
+	UpdateEmail(prof AuthUpdate) (bool, error)
+	UpdateMobile(prof Profile, sid uint64) (bool, error)
 }
 
 type accountServiceImp struct {
@@ -27,11 +29,8 @@ func NewAccountService(repo AccountRepository, conf *common.Config) AccountServi
 }
 
 func (s *accountServiceImp) Register(register *RegisterModel) (interface{}, error) {
-
-	_code := uuid.Must(uuid.NewV4())
 	register.ID = strings.TrimSpace(register.Username)
 	register.Username = strings.TrimSpace(register.Username)
-	register.VerifyCode = _code.String()
 	register.RegisteredDate = time.Now().Unix()
 	register.Profile.FullName = fmt.Sprintf("%s %s", register.Profile.LastName, register.Profile.FirstName)
 	_pwd, err := common.Hash(register.Password, common.Salt)
@@ -45,6 +44,8 @@ func (s *accountServiceImp) Register(register *RegisterModel) (interface{}, erro
 		return nil, err
 	case 1:
 		// Is email type username
+		_code := uuid.Must(uuid.NewV4())
+		register.VerifyCode = _code.String()
 		register.Profile.Email = register.Username
 		break
 	case 2:
@@ -69,4 +70,48 @@ func (s *accountServiceImp) Profile(id string, token string) (string, error) {
 	//func (m *SigningMethodRSA) Verify(signingString, signature string, key interface{}) error
 
 	return "Da lay duoc profile tu ID: " + id, nil
+}
+
+func (s *accountServiceImp) UpdateEmail(prof AuthUpdate) (bool, error) {
+	// Check the profile id is valid?
+	_p, err := s.repo.GetProfileById(prof.SID)
+	if err != nil {
+		return false, err
+	}
+	// Check email was registered before or not!
+	_user, err := s.repo.GetUserById(prof.Email)
+	if err != nil {
+		return false, err
+	}
+
+	_code := uuid.Must(uuid.NewV4())
+	var _m EmailProfileModel
+	if _user.ID == "" {
+		// Cho phep update du lieu vao profile
+		_m = EmailProfileModel{
+			ID:       prof.Email,
+			SID:      _p.ID,
+			Code:     _code.String(),
+			FullName: _p.FullName,
+			Username: prof.Username,
+			Email:    prof.Email,
+			Used:     false,
+		}
+
+	} else {
+		_m = EmailProfileModel{
+			ID:       prof.Email,
+			SID:      _p.ID,
+			Code:     _code.String(),
+			Username: prof.Username,
+			Email:    prof.Email,
+			Used:     true,
+		}
+	}
+
+	return s.repo.CreateEmailPool(&_m)
+	// Create new user with same profile id
+}
+func (s *accountServiceImp) UpdateMobile(prof Profile, sid uint64) (bool, error) {
+	return false, nil
 }

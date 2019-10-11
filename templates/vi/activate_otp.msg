@@ -1,1 +1,1 @@
-Smartlife: Kich hoat tai khoan SmartID voi OTP: %s, ma OTP se het han sau %d giay
+Smartlife: Kích hoạt tài khoản SmartID với mã OTP: %s, mã OTP sẽ hết hạn sau %d giây

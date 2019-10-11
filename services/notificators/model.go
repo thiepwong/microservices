@@ -47,11 +47,17 @@ type RegisterModel struct {
 	VerifiedDate   int     `json:"verified_date" bson:"verified_date"`
 }
 
-type IrisResponse struct {
+type IrisSignInResponse struct {
 	AccessToken string        `json:"access_token"`
 	TokenType   string        `json:"token_type"`
 	Expired     time.Duration `json:"expires_in"`
 	//Error       string        `json:"error"`
+}
+
+type IrisSentResponse struct {
+	Code    string `json:"Code"`
+	Message string `json:"Message"`
+	Data    bool   `json:"Data"`
 }
 
 type Message struct {
@@ -61,4 +67,17 @@ type Message struct {
 	ContentType string `json:"ContentType"`
 }
 
-type SendingList []Message
+type SenderModel struct {
+	Brandname   string    `json:"Brandname"`
+	SendingList []Message `json:"SendingList"`
+}
+
+type EmailProfileModel struct {
+	ID       string `json:"id" bson:"_id,omitempty"`
+	SID      uint64 `json:"sid" bson:"sid"`
+	Code     string `json:"code" bson:"code"`
+	FullName string `json:"full_name" bson:"full_name"`
+	Username string `json:"username" bson:"username"`
+	Email    string `json:"email" bson:"email"`
+	Used     bool   `json:"used" bson:"used"`
+}

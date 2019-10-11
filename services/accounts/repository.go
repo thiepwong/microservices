@@ -10,7 +10,11 @@ import (
 
 type AccountRepository interface {
 	Register(*RegisterModel) (interface{}, error)
-	AccountValidate(username string) (interface{}, error)
+	GetProfileById(sid uint64) (*Profile, error)
+	GetUserById(username string) (*UserModel, error)
+
+	CreateEmailPool(*EmailProfileModel) (bool, error)
+	// AccountValidate(username string) (interface{}, error)
 }
 
 type accountRepositoryContext struct {
@@ -33,11 +37,26 @@ func (a *accountRepositoryContext) Register(data *RegisterModel) (interface{}, e
 	return true, nil
 }
 
-func (a *accountRepositoryContext) AccountValidate(username string) (interface{}, error) {
-	if username == "" {
-		return nil, errors.New("Username is required!")
+func (a *accountRepositoryContext) GetProfileById(sid uint64) (*Profile, error) {
+	var _profile Profile
+	err := a.db.C("profiles").FindId(sid).One(&_profile)
+	if err != nil {
+		return nil, errors.New("Profile not found!")
 	}
-	var _account RegisterModel
-	err := a.db.C("accounts").Find(bson.M{"username": username}).One(&_account)
-	return _account, err
+	return &_profile, nil
+}
+
+func (a *accountRepositoryContext) GetUserById(username string) (*UserModel, error) {
+	var _user UserModel
+	_ = a.db.C("users").FindId(username).One(&_user)
+
+	return &_user, nil
+}
+
+func (a *accountRepositoryContext) CreateEmailPool(_em *EmailProfileModel) (bool, error) {
+	_, err := a.db.C("mailpools").Upsert(bson.M{"_id": _em.Email}, bson.M{"$set": bson.M{"code": _em.Code, "sid": _em.SID, "username": _em.Username, "email": _em.Email, "used": _em.Used, "full_name": _em.FullName}})
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

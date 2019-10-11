@@ -35,9 +35,11 @@ Option:
     Email: no-reply@smartlifevn.com
     Password: 1q2w3e4r5t
   ActivateURL: http://localhost:8081/auth/activate
+  UpdateContactURL: http://localhost:8081/auth/update-contact
 SmsIris:
   Host: https://smsapi2.irismedia.vn/
   SignInRoute: oauth2/token
   SendSmsRoute: api/Sms
-  Username: sms_spin
-  Password: 4utO-p@ck1ng.5PiNnN
+  Username: sms_smartlife
+  Password: sM@r1L!fe
+  Brandname: SMARTLIFE

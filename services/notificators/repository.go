@@ -1,6 +1,8 @@
 package notificators
 
 import (
+	"encoding/base64"
+	"fmt"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -15,8 +17,10 @@ type NotificatorRepository interface {
 	ReadOTP(key string) (string, error)
 	ReadMailActivatedCode(email string) (*RegisterModel, error)
 	ReadRegisterByUser(username string) (register *RegisterModel, err error)
-	ReadIrisToken() string
-	WriteIrisToken(token string, ttl time.Duration) (bool, error)
+	ReadIrisToken(brandName string) string
+	WriteIrisToken(brandName string, token string, ttl time.Duration) (bool, error)
+
+	ReadMailPool(email string) (*EmailProfileModel, error)
 }
 
 type notificatorRepositoryContext struct {
@@ -72,19 +76,30 @@ func (n *notificatorRepositoryContext) ReadRegisterByUser(username string) (regi
 	return register, nil
 }
 
-func (n *notificatorRepositoryContext) ReadIrisToken() string {
-	val, err := n.redis.Client.Get("iris_sms_token").Result()
+func (n *notificatorRepositoryContext) ReadIrisToken(brandName string) string {
+	code := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:sms_token", brandName)))
+	val, err := n.redis.Client.Get(code).Result()
 	if err != nil {
 		return ""
 	}
 	return val
 }
 
-func (n *notificatorRepositoryContext) WriteIrisToken(token string, ttl time.Duration) (bool, error) {
-	err := n.redis.Client.Set("iris_sms_token", token, ttl*1000000000).Err()
+func (n *notificatorRepositoryContext) WriteIrisToken(brandName string, token string, ttl time.Duration) (bool, error) {
+	code := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:sms_token", brandName)))
+	err := n.redis.Client.Set(code, token, ttl*1000000000).Err()
 	if err != nil {
 		return false, err
 	}
 
 	return true, nil
+}
+
+func (n *notificatorRepositoryContext) ReadMailPool(email string) (*EmailProfileModel, error) {
+	var _mail EmailProfileModel
+	err := n.db.C("mailpools").FindId(email).One(&_mail)
+	if err != nil {
+		return nil, err
+	}
+	return &_mail, nil
 }

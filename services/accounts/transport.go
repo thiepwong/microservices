@@ -19,10 +19,9 @@ func RegisterRoute(app *iris.Application, cfg *common.Config) {
 	// Register Account Route
 	accRep := NewAccountReportsitory(mongdb, "accounts")
 	accSrv := NewAccountService(accRep, cfg)
-	acc := mvc.New(app.Party("/accounts")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
+	acc := mvc.New(app.Party("/profile")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	acc.Register(accSrv)
 	acc.Handle(new(AccountRoute))
-
 }
 
 type AccountRoute struct {
@@ -34,6 +33,8 @@ func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
 	b.Handle("GET", "/profile", "GetProfile")
 	b.Handle("POST", "/register", "PostRegister")
+	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
+	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
 }
 
 func (r *AccountRoute) GetProfile() {
@@ -68,4 +69,36 @@ func (r *AccountRoute) PostRegister() {
 	}
 
 	r.Response(200, "Register successful! Please verify the account to active Smart ID", res)
+}
+
+func (r *AccountRoute) PostUpdateEmail(sid string) {
+	var _profile AuthUpdate
+	err := r.Ctx.ReadJSON(&_profile)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+	if _profile.Email == "" {
+		r.Response(428, "Email is required!", nil)
+		return
+	}
+
+	res, err := r.Service.UpdateEmail(_profile)
+	if err != nil {
+		r.Response(500, "", err)
+		return
+	}
+
+	r.Response(200, "", res)
+}
+
+func (r *AccountRoute) PostUpdateMobile(sid string) {
+	var _profile Profile
+	err := r.Ctx.ReadJSON(&_profile)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+	}
+	if _profile.Mobile == "" {
+		r.Response(428, "Mobile is required!", nil)
+	}
 }

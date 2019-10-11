@@ -20,6 +20,7 @@ const (
 type AuthService interface {
 	SignIn(*SignInModel) (interface{}, error)
 	Verify(activate *ActivateModel) (interface{}, error)
+	UpdateContact(*UpdateContact) (interface{}, error)
 }
 
 type authServiceImp struct {
@@ -94,6 +95,9 @@ func (s *authServiceImp) Verify(activate *ActivateModel) (interface{}, error) {
 	case 2:
 		_register, err = s.repo.VerifyBySms(activate.Username, activate.ActivateCode)
 		break
+
+	default:
+		return nil, errors.New("Username is not valid!")
 	}
 
 	// If register not found in system return empty
@@ -110,4 +114,26 @@ func (s *authServiceImp) Verify(activate *ActivateModel) (interface{}, error) {
 	res, err := s.repo.CreateID(_register, smartID)
 
 	return res, err
+}
+
+func (s *authServiceImp) UpdateContact(contact *UpdateContact) (interface{}, error) {
+	_contact, err := common.ValidateUsername(contact.Contact)
+	if err != nil {
+		return nil, err
+	}
+	switch _contact {
+	case 1:
+		// Update Email to existed profile
+
+		break
+	case 2:
+		// Update Mobile to existed profile
+		break
+
+	default:
+
+		break
+	}
+
+	return nil, nil
 }
