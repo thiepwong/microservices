@@ -20,6 +20,10 @@ type AuthRepository interface {
 	VerifyBySms(mobile string, otpCode string) (*RegisterModel, error)
 	VerifyByEmail(email string, activateCode string) (*RegisterModel, error)
 	CreateID(registerInfo *RegisterModel, smartID uint64) (*UserProfile, error)
+	ReadMailPool(email string, code string) (*EmailProfileModel, error)
+	ReadMobilePool(mobile string, code string) (*MobileProfileModel, error)
+	UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error)
+	UpdateProfile(contact string, smartID uint64, contactType int) (bool, error)
 }
 
 type authRepositoryContext struct {
@@ -136,4 +140,74 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 	}
 
 	return &_sid, err
+}
+
+func (a *authRepositoryContext) ReadMailPool(email string, code string) (*EmailProfileModel, error) {
+
+	var _emP EmailProfileModel
+	err := a.db.C("mailpools").FindId(email).One(&_emP)
+	if err != nil {
+		return nil, errors.New("Email not found in pool, please re-add email to profile")
+	}
+
+	return &_emP, nil
+}
+
+func (a *authRepositoryContext) ReadMobilePool(mobile string, code string) (*MobileProfileModel, error) {
+	var _mb MobileProfileModel
+	err := a.db.C("mobilepools").FindId(mobile).One(&_mb)
+	if err != nil {
+		return nil, errors.New("Mobile not found in pool, please re-add mobile to profile")
+	}
+
+	return &_mb, nil
+}
+
+func (a *authRepositoryContext) UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error) {
+
+	var err error
+	err = a.db.C("users").Update(bson.M{"_id": username}, bson.M{"$set": bson.M{"profile_id": smartID}})
+	if err != nil {
+		return false, err
+	}
+
+	switch contactType {
+	case 1:
+		//Update with combine user as Email
+		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": username}})
+
+		break
+	case 2:
+		// Update with combine user as Mobile
+		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": username}})
+		break
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (a *authRepositoryContext) UpdateProfile(contact string, smartID uint64, contactType int) (bool, error) {
+	var err error
+
+	switch contactType {
+	case 1:
+		//Update with combine user as Email
+		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": contact}})
+
+		break
+	case 2:
+		// Update with combine user as Mobile
+		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": contact}})
+		break
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	return false, nil
 }

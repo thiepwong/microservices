@@ -7,11 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/smtp"
 	_url "net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -122,7 +120,8 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 	// 2 => Created OTP then send it with custom template
 	// 3 => Send a normal sms without any OTP for registered member
 	// 4 => Send to any one with any content
-	var _otp *OtpModel
+	// 5 => Send OTP from mobilepools data
+	var _otp *common.OtpModel
 	if sms.Lang == "" {
 		sms.Lang = "vi"
 	}
@@ -140,7 +139,7 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 			return nil, errors.New("Sms template not found! Please use custom template to send")
 		}
 
-		_otp = generateOTP(sms.Mobile, 6, sms.TTL)
+		_otp = common.GenerateOTP(sms.Mobile, 6, sms.TTL)
 		_sms := fmt.Sprintf(_template, _otp.ID, _otp.TTL)
 		_json, err := json.Marshal(_otp)
 		if err != nil {
@@ -166,7 +165,7 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 		if sms.TTL == 0 {
 			sms.TTL = 120
 		}
-		_otp = generateOTP(sms.Mobile, 6, sms.TTL)
+		_otp = common.GenerateOTP(sms.Mobile, 6, sms.TTL)
 		_sms := fmt.Sprintf(sms.Content, _otp.ID, _otp.TTL)
 		_json, err := json.Marshal(_otp)
 		if err != nil {
@@ -206,6 +205,39 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 			return nil, err
 		}
 		return res, nil
+
+	case 5:
+		_mobPo, err := s.repo.ReadMobilePool(sms.Mobile)
+		if err != nil {
+			return nil, errors.New("This mobile number is not add to mobile pools")
+		}
+
+		if sms.TTL == 0 {
+			sms.TTL = 120
+		}
+		_template, err := common.ReadTemplate(fmt.Sprintf("./templates/%s/verify_otp.msg", sms.Lang))
+		if err != nil {
+			return nil, errors.New("Sms template not found! Please use custom template to send")
+		}
+
+		_otp = &common.OtpModel{
+			ID:     _mobPo.Code,
+			Mobile: sms.Mobile,
+			TTL:    sms.TTL,
+		}
+		_sms := fmt.Sprintf(_template, sms.Mobile, _mobPo.Username, _otp.ID, _otp.TTL)
+		_json, err := json.Marshal(_otp)
+		if err != nil {
+			return false, err
+		}
+		s.repo.SaveOTP(_otp.ID, _json, _otp.TTL)
+
+		res, err := smsSender(sms.Mobile, _sms, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
 	}
 
 	return nil, nil
@@ -213,15 +245,6 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 
 func (s *notificatorServiceImpl) SendFirebase(channel string, title string, content string) (interface{}, error) {
 	return nil, nil
-}
-
-func generateOTP(mobile string, size int, ttl time.Duration) *OtpModel {
-	var code string
-	for i := 0; i < size; i++ {
-		code += strconv.Itoa(rand.Intn(9))
-	}
-	_otp := &OtpModel{ID: code, Mobile: mobile, TTL: ttl}
-	return _otp
 }
 
 // Deprecated method by a html emailer

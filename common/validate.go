@@ -2,8 +2,17 @@ package common
 
 import (
 	"errors"
+	"math/rand"
 	"regexp"
+	"strconv"
+	"time"
 )
+
+type OtpModel struct {
+	ID     string        `json:"id"`
+	Mobile string        `json:"mobile"`
+	TTL    time.Duration `json:"ttl"`
+}
 
 func ValidateUsername(username string) (int, error) {
 	if username == "" {
@@ -24,4 +33,13 @@ func ValidateUsername(username string) (int, error) {
 		}
 
 	}
+}
+
+func GenerateOTP(mobile string, size int, ttl time.Duration) *OtpModel {
+	var code string
+	for i := 0; i < size; i++ {
+		code += strconv.Itoa(rand.Intn(9))
+	}
+	_otp := &OtpModel{ID: code, Mobile: mobile, TTL: ttl}
+	return _otp
 }

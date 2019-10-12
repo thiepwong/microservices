@@ -21,6 +21,7 @@ type NotificatorRepository interface {
 	WriteIrisToken(brandName string, token string, ttl time.Duration) (bool, error)
 
 	ReadMailPool(email string) (*EmailProfileModel, error)
+	ReadMobilePool(mobile string) (*MobileProfileModel, error)
 }
 
 type notificatorRepositoryContext struct {
@@ -102,4 +103,13 @@ func (n *notificatorRepositoryContext) ReadMailPool(email string) (*EmailProfile
 		return nil, err
 	}
 	return &_mail, nil
+}
+
+func (n *notificatorRepositoryContext) ReadMobilePool(mobile string) (*MobileProfileModel, error) {
+	var _mobile MobileProfileModel
+	err := n.db.C("mobilepools").FindId(mobile).One(&_mobile)
+	if err != nil {
+		return nil, err
+	}
+	return &_mobile, nil
 }

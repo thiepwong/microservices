@@ -1,0 +1,1 @@
+Smartlife: Bạn đã cập nhật số điện thoại %s vào tài khoản %s. Nhập mã OTP: %s để hoàn tất thao tác. Mã OTP sẽ hết hạn sau %d giây

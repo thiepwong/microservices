@@ -1,0 +1,1 @@
+Smartlife: You added a mobile number %s to SmartID %s. Please input OTP: %s to complete action. The OTP will be expred after %d seconds

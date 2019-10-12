@@ -14,7 +14,7 @@ type AccountRepository interface {
 	GetUserById(username string) (*UserModel, error)
 
 	CreateEmailPool(*EmailProfileModel) (bool, error)
-	// AccountValidate(username string) (interface{}, error)
+	CreateMobilePool(*MobileProfileModel) (bool, error)
 }
 
 type accountRepositoryContext struct {
@@ -55,6 +55,14 @@ func (a *accountRepositoryContext) GetUserById(username string) (*UserModel, err
 
 func (a *accountRepositoryContext) CreateEmailPool(_em *EmailProfileModel) (bool, error) {
 	_, err := a.db.C("mailpools").Upsert(bson.M{"_id": _em.Email}, bson.M{"$set": bson.M{"code": _em.Code, "sid": _em.SID, "username": _em.Username, "email": _em.Email, "used": _em.Used, "full_name": _em.FullName}})
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (a *accountRepositoryContext) CreateMobilePool(_em *MobileProfileModel) (bool, error) {
+	_, err := a.db.C("mobilepools").Upsert(bson.M{"_id": _em.Mobile}, bson.M{"$set": bson.M{"code": _em.Code, "sid": _em.SID, "username": _em.Username, "mobile": _em.Mobile, "used": _em.Used, "full_name": _em.FullName}})
 	if err != nil {
 		return false, err
 	}

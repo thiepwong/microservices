@@ -106,3 +106,23 @@ type UpdateContact struct {
 	Contact string `json:"contact"`
 	Code    string `json:"code"`
 }
+
+type EmailProfileModel struct {
+	ID       string `json:"id" bson:"_id,omitempty"`
+	SID      uint64 `json:"sid" bson:"sid"`
+	Code     string `json:"code" bson:"code"`
+	FullName string `json:"full_name" bson:"full_name"`
+	Username string `json:"username" bson:"username"`
+	Email    string `json:"email" bson:"email"`
+	Used     bool   `json:"used" bson:"used"`
+}
+
+type MobileProfileModel struct {
+	ID       string `json:"id" bson:"_id,omitempty"`
+	SID      uint64 `json:"sid" bson:"sid"`
+	Code     string `json:"code" bson:"code"`
+	FullName string `json:"full_name" bson:"full_name"`
+	Username string `json:"username" bson:"username"`
+	Mobile   string `json:"mobile" bson:"mobile"`
+	Used     bool   `json:"used" bson:"used"`
+}

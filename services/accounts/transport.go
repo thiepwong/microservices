@@ -83,9 +83,9 @@ func (r *AccountRoute) PostUpdateEmail(sid string) {
 		return
 	}
 
-	res, err := r.Service.UpdateEmail(_profile)
+	res, err := r.Service.UpdateEmail(&_profile)
 	if err != nil {
-		r.Response(500, "", err)
+		r.Response(500, err.Error(), err)
 		return
 	}
 
@@ -93,7 +93,7 @@ func (r *AccountRoute) PostUpdateEmail(sid string) {
 }
 
 func (r *AccountRoute) PostUpdateMobile(sid string) {
-	var _profile Profile
+	var _profile AuthUpdate
 	err := r.Ctx.ReadJSON(&_profile)
 	if err != nil {
 		r.Response(406, err.Error(), nil)
@@ -101,4 +101,12 @@ func (r *AccountRoute) PostUpdateMobile(sid string) {
 	if _profile.Mobile == "" {
 		r.Response(428, "Mobile is required!", nil)
 	}
+
+	res, err := r.Service.UpdateMobile(&_profile)
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+	r.Response(200, "", res)
+
 }

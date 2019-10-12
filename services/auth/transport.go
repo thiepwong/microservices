@@ -99,6 +99,7 @@ func (r *AuthRoute) GetUpdateContact() {
 	}
 	r.Response(200, "", res)
 }
+
 func (r *AuthRoute) PostSocialSignIn() {
 
 }

@@ -1,6 +1,7 @@
 package accounts
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -14,8 +15,8 @@ type AccountService interface {
 	Register(*RegisterModel) (interface{}, error)
 	Update(profile string) (interface{}, error)
 	Profile(id string, token string) (string, error)
-	UpdateEmail(prof AuthUpdate) (bool, error)
-	UpdateMobile(prof Profile, sid uint64) (bool, error)
+	UpdateEmail(prof *AuthUpdate) (bool, error)
+	UpdateMobile(prof *AuthUpdate) (bool, error)
 }
 
 type accountServiceImp struct {
@@ -72,11 +73,15 @@ func (s *accountServiceImp) Profile(id string, token string) (string, error) {
 	return "Da lay duoc profile tu ID: " + id, nil
 }
 
-func (s *accountServiceImp) UpdateEmail(prof AuthUpdate) (bool, error) {
+func (s *accountServiceImp) UpdateEmail(prof *AuthUpdate) (bool, error) {
 	// Check the profile id is valid?
 	_p, err := s.repo.GetProfileById(prof.SID)
 	if err != nil {
 		return false, err
+	}
+
+	if _p.Email == prof.Email {
+		return false, errors.New("This email was added before!")
 	}
 	// Check email was registered before or not!
 	_user, err := s.repo.GetUserById(prof.Email)
@@ -112,6 +117,48 @@ func (s *accountServiceImp) UpdateEmail(prof AuthUpdate) (bool, error) {
 	return s.repo.CreateEmailPool(&_m)
 	// Create new user with same profile id
 }
-func (s *accountServiceImp) UpdateMobile(prof Profile, sid uint64) (bool, error) {
-	return false, nil
+func (s *accountServiceImp) UpdateMobile(prof *AuthUpdate) (bool, error) {
+
+	// Check the profile id is valid?
+	_p, err := s.repo.GetProfileById(prof.SID)
+	if err != nil {
+		return false, err
+	}
+
+	if _p.Mobile == prof.Mobile {
+		return false, errors.New("This mobile was added before!")
+	}
+
+	// Check email was registered before or not!
+	_user, err := s.repo.GetUserById(prof.Mobile)
+	if err != nil {
+		return false, err
+	}
+
+	var _m MobileProfileModel
+	if _user.ID == "" {
+		// Cho phep update du lieu vao profile
+		_m = MobileProfileModel{
+			ID:       prof.Mobile,
+			SID:      _p.ID,
+			Code:     common.GenerateOTP(prof.Mobile, 6, 120).ID,
+			FullName: _p.FullName,
+			Username: prof.Username,
+			Mobile:   prof.Mobile,
+			Used:     false,
+		}
+
+	} else {
+		_m = MobileProfileModel{
+			ID:       prof.Mobile,
+			SID:      _p.ID,
+			Code:     common.GenerateOTP(prof.Mobile, 6, 120).ID,
+			FullName: _p.FullName,
+			Username: prof.Username,
+			Mobile:   prof.Mobile,
+			Used:     true,
+		}
+	}
+
+	return s.repo.CreateMobilePool(&_m)
 }
