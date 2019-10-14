@@ -3,23 +3,26 @@ package accounts
 import (
 	"fmt"
 
+	"github.com/kataras/iris/context"
+
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
 )
 
-func RegisterRoute(app *iris.Application, cfg *common.Config) {
-	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
-	if err != nil {
-	}
+func RegisterRoute(app *iris.Application, cors context.Handler, cfg *common.Config) {
+	mongdb := db.GetSession(cfg.Database.Mongo)
+
+	// if err != nil {
+	// }
 
 	//	mvcResult := controllers.NewMvcResult(nil)
 
 	// Register Account Route
-	accRep := NewAccountReportsitory(mongdb, "accounts")
+	accRep := NewAccountReportsitory(mongdb, cfg)
 	accSrv := NewAccountService(accRep, cfg)
-	acc := mvc.New(app.Party("/profile")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
+	acc := mvc.New(app.Party("/profile", cors, common.PreFlight).AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	acc.Register(accSrv)
 	acc.Handle(new(AccountRoute))
 }
