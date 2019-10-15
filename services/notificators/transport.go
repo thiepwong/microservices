@@ -2,22 +2,21 @@ package notificators
 
 import (
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
 )
 
-func RegisterRoute(app *iris.Application, cfg *common.Config) {
+func RegisterRoute(app *iris.Application, cors context.Handler, cfg *common.Config) {
 
-	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
-	if err != nil {
-	}
+	mongoSession := db.GetMongoSession(cfg.Database.Mongo)
 
 	redis := db.GetRedisDb(cfg.Database.Redis)
 
-	notiRepo := NewNotificatorRepository(mongdb, redis)
+	notiRepo := NewNotificatorRepository(mongoSession, redis, cfg)
 	notiServ := NewNotificatorService(notiRepo, cfg)
-	noti := mvc.New(app.Party("/notificator")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
+	noti := mvc.New(app.Party("/notificator", cors, common.PreFlight).AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	noti.Register(notiServ)
 	noti.Handle(new(NotificatorRoute))
 

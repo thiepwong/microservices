@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
 
 	"gopkg.in/mgo.v2"
@@ -27,14 +28,16 @@ type AuthRepository interface {
 }
 
 type authRepositoryContext struct {
-	db    *mgo.Database
-	redis *db.Redis
+	mgoSession *mgo.Session
+	redis      *db.Redis
+	conf       *common.Config
 }
 
-func NewAuthRepository(db *mgo.Database, redis *db.Redis) AuthRepository {
+func NewAuthRepository(sess *mgo.Session, redis *db.Redis, cfg *common.Config) AuthRepository {
 	return &authRepositoryContext{
-		db:    db,
-		redis: redis,
+		mgoSession: sess,
+		redis:      redis,
+		conf:       cfg,
 	}
 }
 
@@ -42,11 +45,11 @@ func (a *authRepositoryContext) SignIn(data *SignInModel) (*UserModel, *ProfileM
 	var _user UserModel
 	var _profile ProfileModel
 
-	err := a.db.C("users").FindId(data.Username).One(&_user)
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").FindId(data.Username).One(&_user)
 	if err != nil {
 		return nil, nil, errors.New("Not found this username in smart ID system")
 	}
-	err = a.db.C("profiles").FindId(_user.ProfileID).One(&_profile)
+	err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").FindId(_user.ProfileID).One(&_profile)
 	if err != nil {
 		return nil, nil, errors.New("Not found profile of this smart ID")
 	}
@@ -57,7 +60,7 @@ func (a *authRepositoryContext) SignIn(data *SignInModel) (*UserModel, *ProfileM
 func (a *authRepositoryContext) VerifyByEmail(email string, activateCode string) (*RegisterModel, error) {
 
 	var _register RegisterModel
-	err := a.db.C("registers").FindId(email).One(&_register)
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("registers").FindId(email).One(&_register)
 	if err != nil {
 		return nil, errors.New("Username not found!")
 	}
@@ -84,7 +87,7 @@ func (a *authRepositoryContext) VerifyBySms(mobile string, otpCode string) (regi
 		return nil, errors.New("OTP is invalid!")
 	}
 
-	err = a.db.C("registers").FindId(mobile).One(&register)
+	err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("registers").FindId(mobile).One(&register)
 	if err != nil {
 		return nil, errors.New("Username was not registered")
 	}
@@ -94,7 +97,7 @@ func (a *authRepositoryContext) VerifyBySms(mobile string, otpCode string) (regi
 
 func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID uint64) (*UserProfile, error) {
 	var _usr = &UserModel{}
-	a.db.C("users").Find(bson.M{"username": registerInfo.Username}).One(_usr)
+	a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").Find(bson.M{"username": registerInfo.Username}).One(_usr)
 
 	if _usr.ProfileID > 0 {
 		return nil, errors.New("This profile is activated before! Please re-verify profile if forgoten the password!")
@@ -120,15 +123,15 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 		Address:   registerInfo.Profile.Address,
 	}
 
-	err := a.db.C("profiles").Insert(_profile)
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Insert(_profile)
 	if err != nil {
 		return nil, err
 	}
-	err = a.db.C("users").Insert(_usr)
+	err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").Insert(_usr)
 	if err != nil {
 		return nil, err
 	}
-	a.db.C("registers").Update(bson.M{"_id": _usr.Username}, bson.M{"$set": bson.M{"verified_date": _usr.ActivatedDate, "verify_code": nil}})
+	a.mgoSession.DB(a.conf.Database.Mongo.Database).C("registers").Update(bson.M{"_id": _usr.Username}, bson.M{"$set": bson.M{"verified_date": _usr.ActivatedDate, "verify_code": nil}})
 
 	_usr.Password = ""
 	_sid := UserProfile{
@@ -145,7 +148,7 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 func (a *authRepositoryContext) ReadMailPool(email string, code string) (*EmailProfileModel, error) {
 
 	var _emP EmailProfileModel
-	err := a.db.C("mailpools").FindId(email).One(&_emP)
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("mailpools").FindId(email).One(&_emP)
 	if err != nil {
 		return nil, errors.New("Email not found in pool, please re-add email to profile")
 	}
@@ -155,7 +158,7 @@ func (a *authRepositoryContext) ReadMailPool(email string, code string) (*EmailP
 
 func (a *authRepositoryContext) ReadMobilePool(mobile string, code string) (*MobileProfileModel, error) {
 	var _mb MobileProfileModel
-	err := a.db.C("mobilepools").FindId(mobile).One(&_mb)
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("mobilepools").FindId(mobile).One(&_mb)
 	if err != nil {
 		return nil, errors.New("Mobile not found in pool, please re-add mobile to profile")
 	}
@@ -166,7 +169,7 @@ func (a *authRepositoryContext) ReadMobilePool(mobile string, code string) (*Mob
 func (a *authRepositoryContext) UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error) {
 
 	var err error
-	err = a.db.C("users").Update(bson.M{"_id": username}, bson.M{"$set": bson.M{"profile_id": smartID}})
+	err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").Update(bson.M{"_id": username}, bson.M{"$set": bson.M{"profile_id": smartID}})
 	if err != nil {
 		return false, err
 	}
@@ -174,12 +177,12 @@ func (a *authRepositoryContext) UpdateProfileWithCombineUser(username string, sm
 	switch contactType {
 	case 1:
 		//Update with combine user as Email
-		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": username}})
+		err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": username}})
 
 		break
 	case 2:
 		// Update with combine user as Mobile
-		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": username}})
+		err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": username}})
 		break
 	}
 
@@ -196,12 +199,12 @@ func (a *authRepositoryContext) UpdateProfile(contact string, smartID uint64, co
 	switch contactType {
 	case 1:
 		//Update with combine user as Email
-		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": contact}})
+		err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"email": contact}})
 
 		break
 	case 2:
 		// Update with combine user as Mobile
-		err = a.db.C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": contact}})
+		err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Update(bson.M{"_id": smartID}, bson.M{"$set": bson.M{"mobile": contact}})
 		break
 	}
 

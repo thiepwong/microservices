@@ -12,15 +12,9 @@ import (
 )
 
 func RegisterRoute(app *iris.Application, cors context.Handler, cfg *common.Config) {
-	mongdb := db.GetSession(cfg.Database.Mongo)
-
-	// if err != nil {
-	// }
-
-	//	mvcResult := controllers.NewMvcResult(nil)
-
+	mongoSession := db.GetMongoSession(cfg.Database.Mongo)
 	// Register Account Route
-	accRep := NewAccountReportsitory(mongdb, cfg)
+	accRep := NewAccountReportsitory(mongoSession, cfg)
 	accSrv := NewAccountService(accRep, cfg)
 	acc := mvc.New(app.Party("/profile", cors, common.PreFlight).AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	acc.Register(accSrv)

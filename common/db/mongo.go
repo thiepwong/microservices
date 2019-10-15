@@ -64,7 +64,7 @@ func GetMongoDb(cfg *common.CfgMg) (*mgo.Database, error) {
 	return db, nil
 }
 
-func GetSession(cfg *common.CfgMg) *mgo.Session {
+func GetMongoSession(cfg *common.CfgMg) *mgo.Session {
 	connectAdd := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{connectAdd},

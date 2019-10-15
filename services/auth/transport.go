@@ -8,15 +8,11 @@ import (
 )
 
 func RegisterRoute(app *iris.Application, cfg *common.Config) {
-	mongdb, err := db.GetMongoDb(cfg.Database.Mongo)
+	mongoSession := db.GetMongoSession(cfg.Database.Mongo)
 	redis := db.GetRedisDb(cfg.Database.Redis)
-	if err != nil {
-	}
-
-	//	mvcResult := controllers.NewMvcResult(nil)
 
 	// Register Account Route
-	accRep := NewAuthRepository(mongdb, redis)
+	accRep := NewAuthRepository(mongoSession, redis, cfg)
 	accSrv := NewAuthService(accRep, cfg)
 	acc := mvc.New(app.Party("/auth")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	acc.Register(accSrv)

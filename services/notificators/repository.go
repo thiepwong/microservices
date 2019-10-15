@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"gopkg.in/mgo.v2"
-
+	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
+	"gopkg.in/mgo.v2"
 )
 
 // NotificatorRepository method
@@ -25,15 +25,17 @@ type NotificatorRepository interface {
 }
 
 type notificatorRepositoryContext struct {
-	redis *db.Redis
-	db    *mgo.Database
+	redis      *db.Redis
+	mgoSession *mgo.Session
+	conf       *common.Config
 }
 
 //NewNotificatorRepository method
-func NewNotificatorRepository(db *mgo.Database, redis *db.Redis) NotificatorRepository {
+func NewNotificatorRepository(sess *mgo.Session, redis *db.Redis, cfg *common.Config) NotificatorRepository {
 	return &notificatorRepositoryContext{
-		redis: redis,
-		db:    db,
+		redis:      redis,
+		mgoSession: sess,
+		conf:       cfg,
 	}
 }
 
@@ -60,7 +62,7 @@ func (n *notificatorRepositoryContext) RemoveOTP(otp *OtpModel) (bool, error) {
 
 func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (register *RegisterModel, err error) {
 
-	err = n.db.C("registers").FindId(email).One(&register)
+	err = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").FindId(email).One(&register)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +72,7 @@ func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (regi
 }
 
 func (n *notificatorRepositoryContext) ReadRegisterByUser(username string) (register *RegisterModel, err error) {
-	err = n.db.C("registers").FindId(username).One(&register)
+	err = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").FindId(username).One(&register)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +100,7 @@ func (n *notificatorRepositoryContext) WriteIrisToken(brandName string, token st
 
 func (n *notificatorRepositoryContext) ReadMailPool(email string) (*EmailProfileModel, error) {
 	var _mail EmailProfileModel
-	err := n.db.C("mailpools").FindId(email).One(&_mail)
+	err := n.mgoSession.DB(n.conf.Database.Mongo.Database).C("mailpools").FindId(email).One(&_mail)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +109,7 @@ func (n *notificatorRepositoryContext) ReadMailPool(email string) (*EmailProfile
 
 func (n *notificatorRepositoryContext) ReadMobilePool(mobile string) (*MobileProfileModel, error) {
 	var _mobile MobileProfileModel
-	err := n.db.C("mobilepools").FindId(mobile).One(&_mobile)
+	err := n.mgoSession.DB(n.conf.Database.Mongo.Database).C("mobilepools").FindId(mobile).One(&_mobile)
 	if err != nil {
 		return nil, err
 	}
