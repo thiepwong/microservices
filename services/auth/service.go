@@ -21,6 +21,7 @@ type AuthService interface {
 	SignIn(*SignInModel) (interface{}, error)
 	Verify(activate *ActivateModel) (interface{}, error)
 	UpdateContact(*UpdateContact) (interface{}, error)
+	ChangePassword(*ChangePasswordModel) (bool, error)
 }
 
 type authServiceImp struct {
@@ -166,4 +167,22 @@ func (s *authServiceImp) UpdateContact(contact *UpdateContact) (interface{}, err
 	}
 
 	return nil, nil
+}
+
+func (s *authServiceImp) ChangePassword(pwd *ChangePasswordModel) (bool, error) {
+	_usr, err := s.repo.ReadPassword(pwd.Username)
+	if err != nil {
+		return false, err
+	}
+
+	valid := common.PasswordCompare(pwd.OldPassword, _usr.Password, common.Salt)
+	if valid == false {
+		return false, errors.New("Old password not match! Please try again!")
+	}
+
+	_pwd, err := common.Hash(pwd.NewPassword, common.Salt)
+	if err != nil {
+		return false, err
+	}
+	return s.repo.WritePassword(pwd.Username, _pwd)
 }

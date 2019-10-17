@@ -26,7 +26,7 @@ type accountRepositoryContext struct {
 
 func NewAccountReportsitory(db *mgo.Session, cfg *common.Config) AccountRepository {
 	return &accountRepositoryContext{
-		mgoSession: db.Clone(),
+		mgoSession: db,
 		conf:       cfg,
 	}
 }

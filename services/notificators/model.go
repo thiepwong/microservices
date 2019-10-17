@@ -10,19 +10,21 @@ type OtpModel struct {
 }
 
 type MailModel struct {
-	Mail    string `json:"email"`
-	Subject string `json:"subject"`
-	Content string `json:"content"`
-	Type    int    `json:"type"`
-	Lang    string `json:"lang"`
+	Mail        string `json:"email"`
+	Subject     string `json:"subject"`
+	Content     string `json:"content"`
+	Type        int    `json:"type"`
+	Lang        string `json:"lang"`
+	CallBackURL string `json:"callback_url"`
 }
 
 type SmsModel struct {
-	Mobile  string        `json:"mobile"`
-	Content string        `json:"content"`
-	Type    int           `json:"type"`
-	Lang    string        `json:"lang"`
-	TTL     time.Duration `json:"ttl"`
+	Mobile      string        `json:"mobile"`
+	Content     string        `json:"content"`
+	Type        int           `json:"type"`
+	Lang        string        `json:"lang"`
+	TTL         time.Duration `json:"ttl"`
+	CallBackURL string        `json:"callback_url"`
 }
 
 type Profile struct {
@@ -90,4 +92,26 @@ type MobileProfileModel struct {
 	Username string `json:"username" bson:"username"`
 	Mobile   string `json:"mobile" bson:"mobile"`
 	Used     bool   `json:"used" bson:"used"`
+}
+
+type ProfileModel struct {
+	ID        uint64 `json:"id"  bson:"_id,omitempty" `
+	FirstName string `json:"first_name" bson:"first_name"`
+	LastName  string `json:"last_name" bson:"last_name"`
+	FullName  string `json:"full_name" bson:"full_name"`
+	Gender    int    `json:"gender" bson:"gender"`
+	BirthDate int64  `json:"birth_date" bson:"birth_date"`
+	Address   string `json:"address" bson:"address"`
+	Avatar    string `json:"avatar" bson:"avatar"`
+	Mobile    string `json:"mobile" bson:"mobile"`
+	Email     string `json:"email" bson:"email"`
+}
+
+type UserModel struct {
+	ID            string `json:"id"  bson:"_id,omitempty" `
+	Username      string `json:"username"  bson:"username"`
+	Password      string `json:"password" bson:"password"`
+	ProfileID     uint64 `json:"profile_id" bson:"profile_id"`
+	ActivatedDate int64  `json:"activated_date" bson:"activated_date"`
+	Status        int    `json:"status" bson:"status"`
 }

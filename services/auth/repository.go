@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/thiepwong/microservices/common"
@@ -25,6 +26,8 @@ type AuthRepository interface {
 	ReadMobilePool(mobile string, code string) (*MobileProfileModel, error)
 	UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error)
 	UpdateProfile(contact string, smartID uint64, contactType int) (bool, error)
+	ReadPassword(string) (*UserModel, error)
+	WritePassword(string, string) (bool, error)
 }
 
 type authRepositoryContext struct {
@@ -213,4 +216,23 @@ func (a *authRepositoryContext) UpdateProfile(contact string, smartID uint64, co
 	}
 
 	return false, nil
+}
+
+func (a *authRepositoryContext) ReadPassword(username string) (*UserModel, error) {
+	var _user UserModel
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").FindId(username).One(&_user)
+	if err != nil {
+		if strings.Contains(err.Error(), "E11000") == true {
+			return nil, errors.New("This username is not exist!")
+		}
+	}
+	return &_user, nil
+}
+
+func (a *authRepositoryContext) WritePassword(username string, pwd string) (bool, error) {
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").UpdateId(username, bson.M{"$set": bson.M{"password": pwd}})
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

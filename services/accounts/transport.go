@@ -32,6 +32,7 @@ func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("POST", "/register", "PostRegister")
 	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
 	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
+
 }
 
 func (r *AccountRoute) GetProfile() {

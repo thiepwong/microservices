@@ -2,9 +2,14 @@ package notificators
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
+	uuid "github.com/satori/go.uuid"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
 	"gopkg.in/mgo.v2"
@@ -22,6 +27,8 @@ type NotificatorRepository interface {
 
 	ReadMailPool(email string) (*EmailProfileModel, error)
 	ReadMobilePool(mobile string) (*MobileProfileModel, error)
+
+	ReadUserProfile(string) (*UserModel, *ProfileModel, error)
 }
 
 type notificatorRepositoryContext struct {
@@ -62,9 +69,16 @@ func (n *notificatorRepositoryContext) RemoveOTP(otp *OtpModel) (bool, error) {
 
 func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (register *RegisterModel, err error) {
 
+	_code := strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1)
+	if err != nil {
+		return nil, errors.New("Cannot create activate code!")
+	}
+
+	err = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").UpdateId(email, bson.M{"$set": bson.M{"verify_code": _code}})
+
 	err = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").FindId(email).One(&register)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("This email was not registered!")
 	}
 
 	return register, nil
@@ -114,4 +128,16 @@ func (n *notificatorRepositoryContext) ReadMobilePool(mobile string) (*MobilePro
 		return nil, err
 	}
 	return &_mobile, nil
+}
+
+func (n *notificatorRepositoryContext) ReadUserProfile(username string) (*UserModel, *ProfileModel, error) {
+	var _usr UserModel
+	var _prf ProfileModel
+	err := n.mgoSession.DB(n.conf.Database.Mongo.Database).C("users").FindId(username).One(&_usr)
+	if err != nil {
+		return nil, nil, errors.New("This username is not exist!")
+	}
+	_ = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("profiles").FindId(_usr.ProfileID).One(&_prf)
+
+	return &_usr, &_prf, nil
 }

@@ -36,6 +36,12 @@ func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 
 	// update contact and combine user
 	b.Handle("GET", "/update-contact", "GetUpdateContact")
+
+	// Change password
+	b.Handle("POST", "/change-password", "PostChangePassword")
+
+	// Forgot password
+	// b.Handle("POST", "/forgot-password", "PostForgotPassword")
 }
 
 func (r *AuthRoute) PostSignIn() {
@@ -97,5 +103,38 @@ func (r *AuthRoute) GetUpdateContact() {
 }
 
 func (r *AuthRoute) PostSocialSignIn() {
+
+}
+
+func (r *AuthRoute) PostChangePassword() {
+	var _data ChangePasswordModel
+	err := r.Ctx.ReadJSON(&_data)
+	if err != nil {
+		r.Response(406, "Json data is required!", err)
+		return
+	}
+
+	if _data.Username == "" {
+		r.Response(208, "Username is required!", nil)
+		return
+	}
+
+	if _data.OldPassword == "" {
+		r.Response(208, "Old password is required!", nil)
+		return
+	}
+
+	if _data.NewPassword == "" {
+		r.Response(208, "New password is required!", nil)
+		return
+	}
+	res, err := r.Service.ChangePassword(&_data)
+
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+
+	r.Response(200, "", res)
 
 }

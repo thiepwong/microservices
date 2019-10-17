@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	uuid "github.com/satori/go.uuid"
+
 	"github.com/thiepwong/microservices/common"
 )
 
@@ -20,6 +22,8 @@ type NotificatorService interface {
 	SendEmail(*MailModel) (bool, error)
 	SendSMS(*SmsModel) (interface{}, error)
 	SendFirebase(channel string, title string, content string) (interface{}, error)
+	// SmsForgotPassword(*SmsModel) (bool, error)
+	// MailForgotPassword(*MailModel) (bool, error)
 }
 
 type notificatorServiceImpl struct {
@@ -41,7 +45,63 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 	auth := smtp.PlainAuth("", s.conf.Option.EmailSender.Email, s.conf.Option.EmailSender.Password, s.conf.Option.EmailSender.Server)
 	r = common.NewRequest([]string{mail.Mail}, mail.Subject, mail.Content, _host, s.conf.Option.EmailSender.Email, auth)
 
+	// Check Send Mail type
+	// 1 => Read Activate code and send it with default template
+	// 2 => Read activate code and send it with custom template
+	// 3 => Send verify email with default template
+	// 4 => Create forgot password mail with default template
+	//
+
 	switch mail.Type {
+	case 1:
+		res, err := s.repo.ReadMailActivatedCode(mail.Mail)
+		if err != nil {
+			return false, errors.New("This username is not found in system")
+		}
+
+		if res.VerifyCode == "" {
+			return false, errors.New("This account is activated before!")
+		}
+
+		templateData := struct {
+			FullName string
+			Username string
+			URL      string
+		}{
+			FullName: res.Profile.FullName,
+			Username: res.Username,
+			URL:      fmt.Sprintf("%s?email=%s&code=%s", mail.CallBackURL, res.Username, res.VerifyCode),
+		}
+		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
+		if err != nil {
+			return false, err
+		}
+		break
+
+	case 2:
+		res, err := s.repo.ReadMailActivatedCode(mail.Mail)
+		if err != nil {
+			return false, errors.New("This username is not found in system")
+		}
+
+		if res.VerifyCode == "" {
+			return false, errors.New("This account is activated before!")
+		}
+
+		templateData := struct {
+			FullName string
+			Username string
+			URL      string
+		}{
+			FullName: res.Profile.FullName,
+			Username: res.Username,
+			URL:      fmt.Sprintf("%s?email=%s&code=%s", mail.CallBackURL, res.Username, res.VerifyCode),
+		}
+		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
+		if err != nil {
+			return false, err
+		}
+		break
 
 	case 3:
 		res, err := s.repo.ReadMailPool(mail.Mail)
@@ -66,30 +126,40 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 		}
 
 		break
-	case 5:
-		res, err := s.repo.ReadMailActivatedCode(mail.Mail)
+
+	case 4:
+		// Create a mail verify code with code
+		_code := uuid.Must(uuid.NewV4())
+		_usr, _pro, err := s.repo.ReadUserProfile(mail.Mail)
+		_usr.Password = ""
+		_json, err := json.Marshal(_usr)
 		if err != nil {
-			return false, errors.New("This username is not found in system")
+			return false, err
 		}
 
-		if res.VerifyCode == "" {
-			return false, errors.New("This account is activated before!")
+		_, err = s.repo.SaveOTP(_code.String(), _json, 60*15)
+		if err != nil {
+			return false, err
 		}
 
 		templateData := struct {
 			FullName string
-			Username string
+			Email    string
 			URL      string
+			SID      uint64
 		}{
-			FullName: res.Profile.FullName,
-			Username: res.Username,
-			URL:      fmt.Sprintf("%s?username=%s&code=%s", s.conf.Option.ActivateURL, res.Username, res.VerifyCode),
+			FullName: _pro.FullName,
+			Email:    _usr.Username,
+			SID:      _usr.ProfileID,
+			URL:      fmt.Sprintf("%s?username=%s&code=%s", mail.CallBackURL, _usr.Username, _code.String()),
 		}
-		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
+		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/forgot_password_email.html", mail.Lang), templateData)
 		if err != nil {
 			return false, err
 		}
+
 		break
+
 	default:
 		break
 	}
@@ -246,6 +316,79 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 func (s *notificatorServiceImpl) SendFirebase(channel string, title string, content string) (interface{}, error) {
 	return nil, nil
 }
+
+// func (s *notificatorServiceImpl) SmsForgotPassword(*SmsModel) (bool, error) {
+
+// }
+
+// func (s *notificatorServiceImpl) MailForgotPassword(*MailModel) (bool, error) {
+
+// 	var r *common.Request
+// 	_host := fmt.Sprintf("%s:%d", s.conf.Option.EmailSender.Server, s.conf.Option.EmailSender.Port)
+// 	auth := smtp.PlainAuth("", s.conf.Option.EmailSender.Email, s.conf.Option.EmailSender.Password, s.conf.Option.EmailSender.Server)
+// 	r = common.NewRequest([]string{mail.Mail}, mail.Subject, mail.Content, _host, s.conf.Option.EmailSender.Email, auth)
+
+// 	// Mail type
+// 	// 1.  Send forgot password mail with default template
+// 	// 2. Send forgot password mail with custom template
+// 	switch mail.Type {
+
+// 	case 1:
+// 		res, err := s.repo.ReadMailPool(mail.Mail)
+// 		if err != nil {
+// 			return false, errors.New("This email is not found in system")
+// 		}
+
+// 		templateData := struct {
+// 			FullName string
+// 			SID      uint64
+// 			Email    string
+// 			URL      string
+// 		}{
+// 			FullName: res.FullName,
+// 			SID:      res.SID,
+// 			Email:    res.Email,
+// 			URL:      fmt.Sprintf("%s?contact=%s&code=%s", s.conf.Option.UpdateContactURL, res.Email, res.Code),
+// 		}
+// 		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/verify_email.html", mail.Lang), templateData)
+// 		if err != nil {
+// 			return false, err
+// 		}
+
+// 		break
+// 	case 5:
+// 		res, err := s.repo.ReadMailActivatedCode(mail.Mail)
+// 		if err != nil {
+// 			return false, errors.New("This username is not found in system")
+// 		}
+
+// 		if res.VerifyCode == "" {
+// 			return false, errors.New("This account is activated before!")
+// 		}
+
+// 		templateData := struct {
+// 			FullName string
+// 			Username string
+// 			URL      string
+// 		}{
+// 			FullName: res.Profile.FullName,
+// 			Username: res.Username,
+// 			URL:      fmt.Sprintf("%s?username=%s&code=%s", s.conf.Option.ActivateURL, res.Username, res.VerifyCode),
+// 		}
+// 		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
+// 		if err != nil {
+// 			return false, err
+// 		}
+// 		break
+// 	default:
+// 		break
+// 	}
+
+// 	ok, _ := r.SendEmail()
+
+// 	return ok, nil
+
+// }
 
 // Deprecated method by a html emailer
 func sendMail(email string, subject string, content string, mailConf *common.MailSender) (bool, error) {
