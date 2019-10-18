@@ -2,19 +2,20 @@ package auth
 
 import (
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
 )
 
-func RegisterRoute(app *iris.Application, cfg *common.Config) {
+func RegisterRoute(app *iris.Application, cors context.Handler, cfg *common.Config) {
 	mongoSession := db.GetMongoSession(cfg.Database.Mongo)
 	redis := db.GetRedisDb(cfg.Database.Redis)
 
 	// Register Account Route
 	accRep := NewAuthRepository(mongoSession, redis, cfg)
 	accSrv := NewAuthService(accRep, cfg)
-	acc := mvc.New(app.Party("/auth")) //.AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
+	acc := mvc.New(app.Party("/auth", cors, common.PreFlight).AllowMethods(iris.MethodOptions, iris.MethodGet, iris.MethodPost))
 	acc.Register(accSrv)
 	acc.Handle(new(AuthRoute))
 
@@ -40,8 +41,8 @@ func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 	// Change password
 	b.Handle("POST", "/change-password", "PostChangePassword")
 
-	// Forgot password
-	// b.Handle("POST", "/forgot-password", "PostForgotPassword")
+	// Create new password
+	b.Handle("POST", "/create-new-password", "PostCreateNewPassword")
 }
 
 func (r *AuthRoute) PostSignIn() {
@@ -136,5 +137,22 @@ func (r *AuthRoute) PostChangePassword() {
 	}
 
 	r.Response(200, "", res)
+
+}
+
+func (r *AuthRoute) PostCreateNewPassword() {
+
+	var _cont VerifyContact
+
+	err := r.Ctx.ReadJSON(&_cont)
+	if err != nil {
+		r.Response(416, "Request is invalid!", nil)
+		return
+	}
+
+	if _cont.Contact == "" || _cont.Code == "" {
+		r.Response(428, "Contact infomation and verify code is required!", nil)
+		return
+	}
 
 }

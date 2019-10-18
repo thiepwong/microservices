@@ -82,7 +82,7 @@ func (a *authRepositoryContext) VerifyByEmail(email string, activateCode string)
 func (a *authRepositoryContext) VerifyBySms(mobile string, otpCode string) (register *RegisterModel, err error) {
 	val, err := a.redis.Client.Get(otpCode).Result()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("The activate code was not found! please re-send activate code and try again!")
 	}
 	var _otpObject OtpModel
 	json.Unmarshal([]byte(val), &_otpObject)

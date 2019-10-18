@@ -22,6 +22,7 @@ type AuthService interface {
 	Verify(activate *ActivateModel) (interface{}, error)
 	UpdateContact(*UpdateContact) (interface{}, error)
 	ChangePassword(*ChangePasswordModel) (bool, error)
+	ConfirmVerify(*VerifyContact) (bool, error)
 }
 
 type authServiceImp struct {
@@ -185,4 +186,8 @@ func (s *authServiceImp) ChangePassword(pwd *ChangePasswordModel) (bool, error) 
 		return false, err
 	}
 	return s.repo.WritePassword(pwd.Username, _pwd)
+}
+
+func(s *authServiceImp) ConfirmVerify(cont *VerifyContact) (bool,error) {
+	return false,nil
 }

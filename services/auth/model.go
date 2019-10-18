@@ -107,6 +107,11 @@ type UpdateContact struct {
 	Code    string `json:"code"`
 }
 
+type VerifyContact struct {
+	Contact string `json:"contact"`
+	Code    string `json:"code"`
+}
+
 type EmailProfileModel struct {
 	ID       string `json:"id" bson:"_id,omitempty"`
 	SID      uint64 `json:"sid" bson:"sid"`
