@@ -28,18 +28,22 @@ type AccountRoute struct {
 
 func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
-	b.Handle("GET", "/profile", "GetProfile")
+	b.Handle("GET", "/user-profile/{sid:string}", "GetProfile", common.AccessAuth)
 	b.Handle("POST", "/register", "PostRegister")
 	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
 	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
 
 }
 
-func (r *AccountRoute) GetProfile() {
-	id := r.Ctx.URLParam("id")
+func (r *AccountRoute) GetProfile(sid string) {
+	if sid == "" {
+		r.Response(428, "Smart ID is required for request profile", nil)
+		return
+	}
+
 	token := r.Ctx.URLParam("token")
 
-	res, e := r.Service.Profile(id, token)
+	res, e := r.Service.Profile(sid, token)
 	if e != nil {
 		r.Ctx.Text("Da bi loi")
 	}

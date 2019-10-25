@@ -85,8 +85,9 @@ func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (regi
 
 }
 
-func (n *notificatorRepositoryContext) ReadRegisterByUser(username string) (register *RegisterModel, err error) {
-	err = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").FindId(username).One(&register)
+func (n *notificatorRepositoryContext) ReadRegisterByUser(username string) (*RegisterModel, error) {
+	var register *RegisterModel
+	err := n.mgoSession.DB(n.conf.Database.Mongo.Database).C("registers").FindId(username).One(&register)
 	if err != nil {
 		return nil, err
 	}

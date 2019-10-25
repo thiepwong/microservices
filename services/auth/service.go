@@ -3,7 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -57,6 +56,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		_exp += int64(60 * 60 * 24)
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"usr": prof.FullName,
 		"iss": node,
 		"act": acc.Username,
 		"sid": acc.ProfileID,
@@ -66,7 +66,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		"sys": signin.System,
 	})
 
-	fmt.Print(prof)
+	// fmt.Print(prof)
 
 	rsa, err := common.ReadPrivateKey("./1011.perm")
 
@@ -188,6 +188,6 @@ func (s *authServiceImp) ChangePassword(pwd *ChangePasswordModel) (bool, error) 
 	return s.repo.WritePassword(pwd.Username, _pwd)
 }
 
-func(s *authServiceImp) ConfirmVerify(cont *VerifyContact) (bool,error) {
-	return false,nil
+func (s *authServiceImp) ConfirmVerify(cont *VerifyContact) (bool, error) {
+	return false, nil
 }
