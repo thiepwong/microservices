@@ -14,7 +14,7 @@ import (
 type AccountService interface {
 	Register(*RegisterModel) (interface{}, error)
 	Update(profile string) (interface{}, error)
-	Profile(id string, token string) (string, error)
+	Profile(id uint64, token string) (interface{}, error)
 	UpdateEmail(prof *AuthUpdate) (bool, error)
 	UpdateMobile(prof *AuthUpdate) (bool, error)
 }
@@ -66,11 +66,9 @@ func (s *accountServiceImp) Update(profile string) (interface{}, error) {
 	return nil, nil
 }
 
-func (s *accountServiceImp) Profile(id string, token string) (string, error) {
+func (s *accountServiceImp) Profile(sid uint64, token string) (interface{}, error) {
 
-	//func (m *SigningMethodRSA) Verify(signingString, signature string, key interface{}) error
-
-	return "Da lay duoc profile tu ID: " + id, nil
+	return s.repo.GetProfileById(sid)
 }
 
 func (s *accountServiceImp) UpdateEmail(prof *AuthUpdate) (bool, error) {

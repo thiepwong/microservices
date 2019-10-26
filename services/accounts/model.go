@@ -11,6 +11,7 @@ type Profile struct {
 	Avatar    string `json:"avatar" bson:"avatar"`
 	Mobile    string `json:"mobile" bson:"mobile"`
 	Email     string `json:"email" bson:"email"`
+	Cover     string `json:"cover" bson:"cover"`
 }
 
 type RegisterModel struct {

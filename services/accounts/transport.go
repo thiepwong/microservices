@@ -28,15 +28,15 @@ type AccountRoute struct {
 
 func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	//r.ApiSecure()
-	b.Handle("GET", "/user-profile/{sid:string}", "GetProfile", common.AccessAuth)
+	b.Handle("GET", "/user-profile/{sid:uint64}", "GetProfile", common.AccessAuth)
 	b.Handle("POST", "/register", "PostRegister")
 	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
 	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
 
 }
 
-func (r *AccountRoute) GetProfile(sid string) {
-	if sid == "" {
+func (r *AccountRoute) GetProfile(sid uint64) {
+	if sid == 0 {
 		r.Response(428, "Smart ID is required for request profile", nil)
 		return
 	}
