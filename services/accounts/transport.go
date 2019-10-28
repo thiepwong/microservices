@@ -32,6 +32,7 @@ func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("POST", "/register", "PostRegister")
 	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
 	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
+	b.Handle("POST", "/update/{sid:uint64}", "PostUpdateProfile", common.AccessAuth)
 
 }
 
@@ -105,6 +106,22 @@ func (r *AccountRoute) PostUpdateMobile(sid string) {
 	}
 
 	res, err := r.Service.UpdateMobile(&_profile)
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+	r.Response(200, "", res)
+
+}
+
+func (r *AccountRoute) PostUpdateProfile(sid uint64) {
+	var _profile Profile
+	err := r.Ctx.ReadJSON(&_profile)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+	}
+
+	res, err := r.Service.UpdateProfile(&_profile)
 	if err != nil {
 		r.Response(500, err.Error(), err)
 		return

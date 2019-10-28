@@ -1,24 +1,3 @@
-// package main
-
-// import (
-// 	"fmt"
-
-// 	"github.com/kataras/iris"
-// 	"github.com/thiepwong/microservices/services/accounts"
-// 	"github.com/thiepwong/microservices/services/notificators"
-// )
-
-// func main() {
-// 	fmt.Println("Da khoi dong dich vu")
-// 	account := accounts.NewService()
-// 	noti := notificators.NewService()
-// 	go func() {
-// 		account.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
-// 	}()
-
-// 	noti.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
-
-// }
 
 package main
 

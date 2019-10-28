@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kataras/iris"
@@ -18,16 +19,32 @@ func PreFlight(c iris.Context) {
 
 }
 
+// func AccessOwnerAuth(c iris.Context) {
+
+// }
+
 func AccessAuth(c iris.Context) {
 	token := c.URLParam("token")
 	if token == "" {
 		return
 	}
 
-	_, err := tokenValidate(token)
+	tk, err := tokenValidate(token)
 	if err != nil {
+		var _result = Result{
+			Version:     "0.1.0",
+			Code:        401,
+			Message:     "Access token is invalid, you cannot access this page",
+			System:      "smartid.account",
+			RequestTime: time.Now().Unix(),
+		}
+		c.StatusCode(iris.StatusUnauthorized)
+		c.JSON(_result)
+		// c.WriteString("loi khong co quyen")
 		return
+		//c.JSON(_result)
 	}
+	c.Values().Set("user", tk)
 
 	c.Next()
 

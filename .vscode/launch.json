@@ -12,10 +12,9 @@
             "mode": "debug",
             "remotePath": "", 
             "host": "127.0.0.1",
-            "program": "${workspaceRoot}",
+            "program": "E:\\SOFTWARE\\LEARNING\\GO\\Workspace\\src\\github.com\\thiepwong\\microservices\\serve.go",
             "env": {},
-            "args": [],
-            "showLog": true
+            "args": [] 
         }
     ]
 }
