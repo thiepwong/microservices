@@ -17,6 +17,7 @@ type AccountRepository interface {
 
 	CreateEmailPool(*EmailProfileModel) (bool, error)
 	CreateMobilePool(*MobileProfileModel) (bool, error)
+	UpdateProfile(*Profile) (bool, error)
 }
 
 type accountRepositoryContext struct {
@@ -71,5 +72,24 @@ func (a *accountRepositoryContext) CreateMobilePool(_em *MobileProfileModel) (bo
 	if err != nil {
 		return false, err
 	}
+	return true, nil
+}
+
+func (a *accountRepositoryContext) UpdateProfile(prof *Profile) (bool, error) {
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").UpdateId(prof.ID,
+		bson.M{
+			"$set": bson.M{
+				"first_name": prof.FirstName,
+				"last_name":  prof.LastName,
+				"full_name":  prof.FullName,
+				"gender":     prof.Gender,
+				"address":    prof.Address,
+				"birth_date": prof.BirthDate,
+			},
+		})
+	if err != nil {
+		return false, err
+	}
+
 	return true, nil
 }

@@ -3,9 +3,9 @@ package accounts
 import (
 	"fmt"
 
-	"github.com/kataras/iris/context"
-
+	"github.com/dgrijalva/jwt-go"
 	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 	"github.com/kataras/iris/mvc"
 	"github.com/thiepwong/microservices/common"
 	"github.com/thiepwong/microservices/common/db"
@@ -117,11 +117,20 @@ func (r *AccountRoute) PostUpdateMobile(sid string) {
 func (r *AccountRoute) PostUpdateProfile(sid uint64) {
 	var _profile Profile
 	err := r.Ctx.ReadJSON(&_profile)
+	_usr := r.Ctx.Values().Get("user")
+	__u := _usr.(jwt.MapClaims)
 	if err != nil {
 		r.Response(406, err.Error(), nil)
+		return
+	}
+	// __sid, err := strconv.ParseUint(__u["sid"].map(string), 10, 64)
+	__sid := uint64(__u["sid"].(float64))
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
 	}
 
-	res, err := r.Service.UpdateProfile(&_profile)
+	res, err := r.Service.UpdateProfile(&_profile, __sid)
 	if err != nil {
 		r.Response(500, err.Error(), err)
 		return

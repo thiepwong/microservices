@@ -17,7 +17,7 @@ type AccountService interface {
 	Profile(id uint64, token string) (interface{}, error)
 	UpdateEmail(prof *AuthUpdate) (bool, error)
 	UpdateMobile(prof *AuthUpdate) (bool, error)
-	UpdateProfile(prof *Profile) (bool, error)
+	UpdateProfile(prof *Profile, sid uint64) (bool, error)
 }
 
 type accountServiceImp struct {
@@ -161,8 +161,12 @@ func (s *accountServiceImp) UpdateMobile(prof *AuthUpdate) (bool, error) {
 
 	return s.repo.CreateMobilePool(&_m)
 }
-func (s *accountServiceImp) UpdateProfile(prof *Profile) (bool, error) {
-	_, err := s.repo.GetProfileById(prof.ID)
+func (s *accountServiceImp) UpdateProfile(prof *Profile, sid uint64) (bool, error) {
+	if prof.ID != sid {
+		return false, errors.New("Only profile owner can update profile infomation!")
+	}
+	prof.FullName = fmt.Sprintf("%s %s", prof.LastName, prof.FirstName)
+	_, err := s.repo.UpdateProfile(prof)
 	if err != nil {
 		return false, err
 	}

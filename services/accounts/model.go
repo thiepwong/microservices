@@ -1,5 +1,11 @@
 package accounts
 
+import (
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
 type Profile struct {
 	ID        uint64 `json:"id"  bson:"_id,omitempty" `
 	FirstName string `json:"first_name" bson:"first_name"`
@@ -58,4 +64,16 @@ type MobileProfileModel struct {
 	Username string `json:"username" bson:"username"`
 	Mobile   string `json:"email" bson:"email"`
 	Used     bool   `json:"used" bson:"used"`
+}
+
+type TokenClaims struct {
+	jwt.MapClaims
+	Usr string        `json:"usr"`
+	Iss string        `json:"iss"`
+	Act string        `json:"act"`
+	Sid uint64        `json:"sid"`
+	Jit string        `json:"jit"`
+	Iat time.Duration `json:"iat"`
+	Exp time.Duration `json:"exp"`
+	Sys string        `json:"sys"`
 }

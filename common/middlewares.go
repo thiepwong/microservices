@@ -2,12 +2,22 @@ package common
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kataras/iris"
 )
+
+type TokenClaims struct {
+	Usr string        `json:"usr"`
+	Iss string        `json:"iss"`
+	Act string        `json:"act"`
+	Sid uint64        `json:"sid"`
+	Jit string        `json:"jit"`
+	Iat time.Duration `json:"iat"`
+	Exp time.Duration `json:"exp"`
+	Sys string        `json:"sys"`
+}
 
 func PreFlight(c iris.Context) {
 
@@ -63,6 +73,5 @@ func tokenValidate(tokenString string) (interface{}, error) {
 	if err != nil {
 		return nil, errors.New("Token key is invalid")
 	}
-	fmt.Print(token)
-	return token, nil
+	return token.Claims, nil
 }
