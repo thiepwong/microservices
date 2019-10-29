@@ -39,7 +39,7 @@ func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("GET", "/update-contact", "GetUpdateContact")
 
 	// Change password
-	b.Handle("POST", "/change-password", "PostChangePassword")
+	b.Handle("POST", "/change-password", "PostChangePassword", common.AccessAuth)
 
 	// Create new password
 	b.Handle("POST", "/create-new-password", "PostCreateNewPassword")

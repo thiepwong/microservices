@@ -1,8 +1,6 @@
 package accounts
 
 import (
-	"fmt"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/context"
@@ -33,6 +31,8 @@ func (r *AccountRoute) BeforeActivation(b mvc.BeforeActivation) {
 	b.Handle("POST", "/{sid:string}/email", "PostUpdateEmail")
 	b.Handle("POST", "/{sid:string}/mobile", "PostUpdateMobile")
 	b.Handle("POST", "/update/{sid:uint64}", "PostUpdateProfile", common.AccessAuth)
+	b.Handle("POST", "/update-avatar/{sid:uint64}", "PostUpdateAvatar", common.AccessAuth)
+	b.Handle("POST", "/update-cover/{sid:uint64}", "PostUpdateCover", common.AccessAuth)
 
 }
 
@@ -46,10 +46,11 @@ func (r *AccountRoute) GetProfile(sid uint64) {
 
 	res, e := r.Service.Profile(sid, token)
 	if e != nil {
-		r.Ctx.Text("Da bi loi")
+		r.Response(500, e.Error(), e)
+		return
 	}
-	fmt.Println(res)
-	r.Response(200, "Da gui thanh cong", res)
+
+	r.Response(200, "", res)
 }
 
 func (r *AccountRoute) PostRegister() {
@@ -115,6 +116,56 @@ func (r *AccountRoute) PostUpdateMobile(sid string) {
 }
 
 func (r *AccountRoute) PostUpdateProfile(sid uint64) {
+	var _profile Profile
+	err := r.Ctx.ReadJSON(&_profile)
+	_usr := r.Ctx.Values().Get("user")
+	__u := _usr.(jwt.MapClaims)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+	// __sid, err := strconv.ParseUint(__u["sid"].map(string), 10, 64)
+	__sid := uint64(__u["sid"].(float64))
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+
+	res, err := r.Service.UpdateProfile(&_profile, __sid)
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+	r.Response(200, "", res)
+
+}
+
+func (r *AccountRoute) PostUpdateAvatar(sid uint64) {
+	var _profile Profile
+	err := r.Ctx.ReadJSON(&_profile)
+	_usr := r.Ctx.Values().Get("user")
+	__u := _usr.(jwt.MapClaims)
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+	// __sid, err := strconv.ParseUint(__u["sid"].map(string), 10, 64)
+	__sid := uint64(__u["sid"].(float64))
+	if err != nil {
+		r.Response(406, err.Error(), nil)
+		return
+	}
+
+	res, err := r.Service.UpdateProfile(&_profile, __sid)
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+	r.Response(200, "", res)
+
+}
+
+func (r *AccountRoute) PostUpdateCover(sid uint64) {
 	var _profile Profile
 	err := r.Ctx.ReadJSON(&_profile)
 	_usr := r.Ctx.Values().Get("user")

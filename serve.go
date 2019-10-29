@@ -1,9 +1,10 @@
-
 package main
 
 import (
 	"fmt"
 	"os"
+
+	"github.com/thiepwong/microservices/services/images"
 
 	"github.com/thiepwong/microservices/services/notificators"
 
@@ -35,6 +36,7 @@ func main() {
 		startAccount()
 		startAuth()
 		startNotificator()
+		startImage()
 	}()
 
 	for {
@@ -97,6 +99,19 @@ func startNotificator() {
 		}
 		serv := notificators.NewService(conf)
 		serv.Run(iris.Addr(":8082"), iris.WithoutServerError(iris.ErrServerClosed))
+
+	}()
+}
+
+func startImage() {
+	go func() {
+		_cfgPath := "configs/account.yaml"
+		conf, es := common.LoadConfig(_cfgPath)
+		if es != nil {
+			os.Exit(10)
+		}
+		serv := images.NewService(conf)
+		serv.Run(iris.Addr(":8083"), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }
