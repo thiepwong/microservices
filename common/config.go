@@ -34,9 +34,10 @@ type CfgPg struct {
 }
 
 type CfgDb struct {
-	Postgre *CfgPg `yaml:"Postgre"`
-	Redis   *CfgRd `yaml:"Redis"`
-	Mongo   *CfgMg `yaml:"Mongo"`
+	Postgre *CfgPg  `yaml:"Postgre"`
+	Redis   *CfgRd  `yaml:"Redis"`
+	Mongo   *CfgMg  `yaml:"Mongo"`
+	FTP     *CfgFTP `yaml:"FTP"`
 }
 
 type Service struct {
@@ -78,6 +79,14 @@ type IRIS struct {
 	Username     string `yaml:"Username"`
 	Password     string `yaml:"Password"`
 	Brandname    string `yaml:"Brandname"`
+}
+
+type CfgFTP struct {
+	Host     string `yaml:"Host"`
+	Port     int    `yaml:"Port"`
+	Volume   string `yaml:"Volume"`
+	Username string `yaml:"Username"`
+	Password string `yaml:"Password"`
 }
 
 func LoadConfig(cfgPath string) (*Config, error) {

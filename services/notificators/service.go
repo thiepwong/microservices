@@ -118,7 +118,7 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 			FullName: res.FullName,
 			SID:      res.SID,
 			Email:    res.Email,
-			URL:      fmt.Sprintf("%s?contact=%s&code=%s", s.conf.Option.UpdateContactURL, res.Email, res.Code),
+			URL:      fmt.Sprintf("%s?contact=%s&code=%s", mail.CallBackURL, res.Email, res.Code),
 		}
 		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/verify_email.html", mail.Lang), templateData)
 		if err != nil {

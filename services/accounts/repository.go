@@ -18,6 +18,8 @@ type AccountRepository interface {
 	CreateEmailPool(*EmailProfileModel) (bool, error)
 	CreateMobilePool(*MobileProfileModel) (bool, error)
 	UpdateProfile(*Profile) (bool, error)
+	UpdateAvatar(*Profile) (bool, error)
+	UpdateCover(*Profile) (bool, error)
 }
 
 type accountRepositoryContext struct {
@@ -85,6 +87,34 @@ func (a *accountRepositoryContext) UpdateProfile(prof *Profile) (bool, error) {
 				"gender":     prof.Gender,
 				"address":    prof.Address,
 				"birth_date": prof.BirthDate,
+			},
+		})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (a *accountRepositoryContext) UpdateAvatar(prof *Profile) (bool, error) {
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").UpdateId(prof.ID,
+		bson.M{
+			"$set": bson.M{
+				"avatar": prof.Avatar,
+			},
+		})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (a *accountRepositoryContext) UpdateCover(prof *Profile) (bool, error) {
+	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").UpdateId(prof.ID,
+		bson.M{
+			"$set": bson.M{
+				"cover": prof.Cover,
 			},
 		})
 	if err != nil {

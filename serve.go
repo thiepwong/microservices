@@ -105,13 +105,13 @@ func startNotificator() {
 
 func startImage() {
 	go func() {
-		_cfgPath := "configs/account.yaml"
+		_cfgPath := "configs/image.yaml"
 		conf, es := common.LoadConfig(_cfgPath)
 		if es != nil {
 			os.Exit(10)
 		}
 		serv := images.NewService(conf)
-		serv.Run(iris.Addr(":8083"), iris.WithoutServerError(iris.ErrServerClosed))
+		serv.Run(iris.Addr(fmt.Sprintf(":%d", conf.Service.Port)), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }

@@ -18,6 +18,8 @@ type AccountService interface {
 	UpdateEmail(prof *AuthUpdate) (bool, error)
 	UpdateMobile(prof *AuthUpdate) (bool, error)
 	UpdateProfile(prof *Profile, sid uint64) (bool, error)
+	UpdateAvatar(prof *Profile, sid uint64) (bool, error)
+	UpdateCover(prof *Profile, sid uint64) (bool, error)
 }
 
 type accountServiceImp struct {
@@ -167,6 +169,32 @@ func (s *accountServiceImp) UpdateProfile(prof *Profile, sid uint64) (bool, erro
 	}
 	prof.FullName = fmt.Sprintf("%s %s", prof.LastName, prof.FirstName)
 	_, err := s.repo.UpdateProfile(prof)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (s *accountServiceImp) UpdateAvatar(prof *Profile, sid uint64) (bool, error) {
+	if prof.ID != sid {
+		return false, errors.New("Only profile owner can update avatar!")
+	}
+	prof.FullName = fmt.Sprintf("%s %s", prof.LastName, prof.FirstName)
+	_, err := s.repo.UpdateAvatar(prof)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (s *accountServiceImp) UpdateCover(prof *Profile, sid uint64) (bool, error) {
+	if prof.ID != sid {
+		return false, errors.New("Only profile owner can update cover!")
+	}
+	prof.FullName = fmt.Sprintf("%s %s", prof.LastName, prof.FirstName)
+	_, err := s.repo.UpdateCover(prof)
 	if err != nil {
 		return false, err
 	}

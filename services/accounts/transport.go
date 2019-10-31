@@ -156,7 +156,7 @@ func (r *AccountRoute) PostUpdateAvatar(sid uint64) {
 		return
 	}
 
-	res, err := r.Service.UpdateProfile(&_profile, __sid)
+	res, err := r.Service.UpdateAvatar(&_profile, __sid)
 	if err != nil {
 		r.Response(500, err.Error(), err)
 		return
@@ -181,7 +181,7 @@ func (r *AccountRoute) PostUpdateCover(sid uint64) {
 		return
 	}
 
-	res, err := r.Service.UpdateProfile(&_profile, __sid)
+	res, err := r.Service.UpdateCover(&_profile, __sid)
 	if err != nil {
 		r.Response(500, err.Error(), err)
 		return

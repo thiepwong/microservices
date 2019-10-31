@@ -1,0 +1,14 @@
+Service:
+  Host: 192.168.1.17
+  Port: 8083
+  SSL: false
+  PrivateKey:
+  PublicKey:  
+Database: 
+  FTP:
+    Host: cdn.smartlifevn.com
+    Port: 21
+    Volume: cdn/upload/smart.id/profiles
+    Username: ftp_media
+    Password: sml@!234
+ 

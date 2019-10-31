@@ -2,30 +2,40 @@ package images
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/thiepwong/microservices/common"
 )
 
 // AccountService ...interface ...
-type AccountService interface {
-	Upload(*Image) (interface{}, error)
+type ImageService interface {
+	Upload(*Image, uint64) (interface{}, error)
+	List(uint64) (interface{}, error)
 }
 
-type accountServiceImp struct {
-	repo AccountRepository
+type imageServiceImp struct {
 	conf *common.Config
 }
 
 // NewAccountService ...
-func NewAccountService(repo AccountRepository, conf *common.Config) AccountService {
-	return &accountServiceImp{repo: repo, conf: conf}
+func NewImageService(conf *common.Config) ImageService {
+	return &imageServiceImp{conf: conf}
 }
 
-func (s *accountServiceImp) Upload(img *Image) (interface{}, error) {
+func (s *imageServiceImp) Upload(img *Image, sid uint64) (interface{}, error) {
 	if img.Data == "" {
 		return nil, errors.New("Data is empty! Please upload an image")
 	}
+	name, err := common.FtpWriteImage(s.conf, fmt.Sprintf("%d", sid), img.Data)
+	if err != nil {
+		return nil, err
+	}
 
-	return img, nil
+	return name, nil
 
+}
+
+func (s *imageServiceImp) List(sid uint64) (interface{}, error) {
+	list, err := common.FtpListAll(s.conf, fmt.Sprintf("%d", sid))
+	return list, err
 }
