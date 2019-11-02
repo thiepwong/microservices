@@ -127,18 +127,22 @@ func (s *authServiceImp) UpdateContact(contact *UpdateContact) (interface{}, err
 	case 1:
 		// Update Email to existed profile
 		// Load mailpools
-		_mailPool, err := s.repo.ReadMailPool(contact.Contact, contact.Code)
+		_mailPool, err := s.repo.ReadMailPool(contact.Contact)
 		if err != nil {
 			return nil, err
 		}
 
+		if _mailPool.Code != contact.Code {
+			return nil, errors.New("Code not match, please try again later")
+		}
+
 		if _mailPool.Used == true {
 			// Combine 2 user account with new Smart ID
-			return s.repo.UpdateProfileWithCombineUser(_mailPool.Username, _mailPool.SID, 1)
+			return s.repo.UpdateProfileContactWithCombineUser(_mailPool.Email, _mailPool.SID, 1)
 
 		} else {
 			// Update mail to profile contact email without combine any user account
-			return s.repo.UpdateProfile(_mailPool.Username, _mailPool.SID, 1)
+			return s.repo.UpdateProfileContact(_mailPool.Email, _mailPool.SID, 1)
 
 		}
 
@@ -156,11 +160,11 @@ func (s *authServiceImp) UpdateContact(contact *UpdateContact) (interface{}, err
 
 		if _mobilePool.Used == true {
 			// Update mobile number to profile with combine user account
-			return s.repo.UpdateProfileWithCombineUser(_mobilePool.Mobile, _mobilePool.SID, 2)
+			return s.repo.UpdateProfileContactWithCombineUser(_mobilePool.Mobile, _mobilePool.SID, 2)
 		} else {
 			// Update mobile number to profile without any combine
 
-			return s.repo.UpdateProfile(_mobilePool.Mobile, _mobilePool.SID, 2)
+			return s.repo.UpdateProfileContact(_mobilePool.Mobile, _mobilePool.SID, 2)
 		}
 	default:
 

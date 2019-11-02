@@ -3,17 +3,19 @@ package auth
 import "time"
 
 type Profile struct {
-	ID        uint64
-	FirstName string `json:"first_name" bson:"first_name"`
-	LastName  string `json:"last_name" bson:"last_name"`
-	FullName  string `json:"full_name" bson:"full_name"`
-	Gender    int    `json:"gender" bson:"gender"`
-	BirthDate int64  `json:"birth_date" bson:"birth_date"`
-	Address   string `json:"address" bson:"address"`
-	Avatar    string `json:"avatar" bson:"avatar"`
-	Mobile    string `json:"mobile" bson:"mobile"`
-	Email     string `json:"email" bson:"email"`
-	Cover     string `json:"cover" bson:"cover"`
+	ID          uint64
+	FirstName   string `json:"first_name" bson:"first_name"`
+	LastName    string `json:"last_name" bson:"last_name"`
+	FullName    string `json:"full_name" bson:"full_name"`
+	Gender      int    `json:"gender" bson:"gender"`
+	BirthDate   int64  `json:"birth_date" bson:"birth_date"`
+	Address     string `json:"address" bson:"address"`
+	Avatar      string `json:"avatar" bson:"avatar"`
+	Mobile      string `json:"mobile" bson:"mobile"`
+	Email       string `json:"email" bson:"email"`
+	Cover       string `json:"cover" bson:"cover"`
+	CreatedDate int64  `json:"created_date" bson:"created_date"`
+	LastUpdate  int64  `json:"last_update" bson:"last_update"`
 }
 
 type RegisterModel struct {
@@ -85,17 +87,19 @@ type UserProfile struct {
 }
 
 type ProfileModel struct {
-	ID        uint64 `json:"id"  bson:"_id,omitempty" `
-	FirstName string `json:"first_name" bson:"first_name"`
-	LastName  string `json:"last_name" bson:"last_name"`
-	FullName  string `json:"full_name" bson:"full_name"`
-	Gender    int    `json:"gender" bson:"gender"`
-	BirthDate int64  `json:"birth_date" bson:"birth_date"`
-	Address   string `json:"address" bson:"address"`
-	Avatar    string `json:"avatar" bson:"avatar"`
-	Mobile    string `json:"mobile" bson:"mobile"`
-	Email     string `json:"email" bson:"email"`
-	Cover     string `json:"cover" bson:"cover"`
+	ID          uint64 `json:"id"  bson:"_id,omitempty" `
+	FirstName   string `json:"first_name" bson:"first_name"`
+	LastName    string `json:"last_name" bson:"last_name"`
+	FullName    string `json:"full_name" bson:"full_name"`
+	Gender      int    `json:"gender" bson:"gender"`
+	BirthDate   int64  `json:"birth_date" bson:"birth_date"`
+	Address     string `json:"address" bson:"address"`
+	Avatar      string `json:"avatar" bson:"avatar"`
+	Mobile      string `json:"mobile" bson:"mobile"`
+	Email       string `json:"email" bson:"email"`
+	Cover       string `json:"cover" bson:"cover"`
+	CreatedDate int64  `json:"created_date" bson:"created_date"`
+	LastUpdate  int64  `json:"last_update" bson:"last_update"`
 }
 
 type OtpModel struct {

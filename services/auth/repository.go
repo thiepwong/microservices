@@ -22,10 +22,10 @@ type AuthRepository interface {
 	VerifyBySms(mobile string, otpCode string) (*RegisterModel, error)
 	VerifyByEmail(email string, activateCode string) (*RegisterModel, error)
 	CreateID(registerInfo *RegisterModel, smartID uint64) (*UserProfile, error)
-	ReadMailPool(email string, code string) (*EmailProfileModel, error)
+	ReadMailPool(email string) (*EmailProfileModel, error)
 	ReadMobilePool(mobile string, code string) (*MobileProfileModel, error)
-	UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error)
-	UpdateProfile(contact string, smartID uint64, contactType int) (bool, error)
+	UpdateProfileContactWithCombineUser(username string, smartID uint64, contactType int) (bool, error)
+	UpdateProfileContact(contact string, smartID uint64, contactType int) (bool, error)
 	ReadPassword(string) (*UserModel, error)
 	WritePassword(string, string) (bool, error)
 }
@@ -114,16 +114,17 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 	_usr.Status = 1
 
 	var _profile = &ProfileModel{
-		ID:        smartID,
-		FirstName: registerInfo.Profile.FirstName,
-		LastName:  registerInfo.Profile.LastName,
-		FullName:  registerInfo.Profile.FullName,
-		Gender:    registerInfo.Profile.Gender,
-		Email:     registerInfo.Profile.Email,
-		Mobile:    registerInfo.Profile.Mobile,
-		BirthDate: registerInfo.Profile.BirthDate,
-		Avatar:    registerInfo.Profile.Avatar,
-		Address:   registerInfo.Profile.Address,
+		ID:          smartID,
+		FirstName:   registerInfo.Profile.FirstName,
+		LastName:    registerInfo.Profile.LastName,
+		FullName:    registerInfo.Profile.FullName,
+		Gender:      registerInfo.Profile.Gender,
+		Email:       registerInfo.Profile.Email,
+		Mobile:      registerInfo.Profile.Mobile,
+		BirthDate:   registerInfo.Profile.BirthDate,
+		Avatar:      registerInfo.Profile.Avatar,
+		Address:     registerInfo.Profile.Address,
+		CreatedDate: time.Now().Unix(),
 	}
 
 	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("profiles").Insert(_profile)
@@ -136,7 +137,6 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 	}
 	a.mgoSession.DB(a.conf.Database.Mongo.Database).C("registers").Update(bson.M{"_id": _usr.Username}, bson.M{"$set": bson.M{"verified_date": _usr.ActivatedDate, "verify_code": nil}})
 
-	_usr.Password = ""
 	_sid := UserProfile{
 		SmartID:       smartID,
 		Username:      _usr.Username,
@@ -148,7 +148,7 @@ func (a *authRepositoryContext) CreateID(registerInfo *RegisterModel, smartID ui
 	return &_sid, err
 }
 
-func (a *authRepositoryContext) ReadMailPool(email string, code string) (*EmailProfileModel, error) {
+func (a *authRepositoryContext) ReadMailPool(email string) (*EmailProfileModel, error) {
 
 	var _emP EmailProfileModel
 	err := a.mgoSession.DB(a.conf.Database.Mongo.Database).C("mailpools").FindId(email).One(&_emP)
@@ -169,7 +169,7 @@ func (a *authRepositoryContext) ReadMobilePool(mobile string, code string) (*Mob
 	return &_mb, nil
 }
 
-func (a *authRepositoryContext) UpdateProfileWithCombineUser(username string, smartID uint64, contactType int) (bool, error) {
+func (a *authRepositoryContext) UpdateProfileContactWithCombineUser(username string, smartID uint64, contactType int) (bool, error) {
 
 	var err error
 	err = a.mgoSession.DB(a.conf.Database.Mongo.Database).C("users").Update(bson.M{"_id": username}, bson.M{"$set": bson.M{"profile_id": smartID}})
@@ -196,7 +196,7 @@ func (a *authRepositoryContext) UpdateProfileWithCombineUser(username string, sm
 	return true, nil
 }
 
-func (a *authRepositoryContext) UpdateProfile(contact string, smartID uint64, contactType int) (bool, error) {
+func (a *authRepositoryContext) UpdateProfileContact(contact string, smartID uint64, contactType int) (bool, error) {
 	var err error
 
 	switch contactType {
