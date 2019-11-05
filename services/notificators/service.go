@@ -70,7 +70,7 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 		}{
 			FullName: res.Profile.FullName,
 			Username: res.Username,
-			URL:      fmt.Sprintf("%s?email=%s&code=%s", mail.CallBackURL, res.Username, res.VerifyCode),
+			URL:      fmt.Sprintf("%s?username=%s&code=%s", mail.CallBackURL, res.Username, res.VerifyCode),
 		}
 		err = r.ParseTemplate(fmt.Sprintf("./templates/%s/activate_email.html", mail.Lang), templateData)
 		if err != nil {
