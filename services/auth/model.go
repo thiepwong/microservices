@@ -57,8 +57,9 @@ type ActivateModel struct {
 }
 
 type SignInResponse struct {
-	SmartID uint64 `json:"smart_id"`
-	Token   string `json:"token"`
+	SmartID      uint64 `json:"smart_id"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 type UserModel struct {
@@ -142,4 +143,9 @@ type ChangePasswordModel struct {
 	Username    string `json:"username"`
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
+}
+
+type RefreshToken struct {
+	UserName string        `json:"username"`
+	Profile  *ProfileModel `json:"profile"`
 }

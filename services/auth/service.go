@@ -22,6 +22,7 @@ type AuthService interface {
 	UpdateContact(*UpdateContact) (interface{}, error)
 	ChangePassword(*ChangePasswordModel) (bool, error)
 	ConfirmVerify(*VerifyContact) (bool, error)
+	SignInViaRefreshToken(string) (interface{}, error)
 }
 
 type authServiceImp struct {
@@ -75,11 +76,74 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		return nil, err
 	}
 
+	_refTkn := RefreshToken{
+		UserName: acc.Username,
+		Profile:  prof,
+	}
+
+	_refreshToken, err := createRefreshToken(s, &_refTkn)
+	if err != nil {
+		return nil, err
+	}
+
 	response := &SignInResponse{
-		SmartID: acc.ProfileID,
-		Token:   tokenString,
+		SmartID:      acc.ProfileID,
+		Token:        tokenString,
+		RefreshToken: _refreshToken,
 	}
 	return response, nil
+}
+
+func (s *authServiceImp) SignInViaRefreshToken(refreshToken string) (interface{}, error) {
+
+	_rft, err := s.repo.ReadRefreshToken(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	var refTkn RefreshToken
+	err = json.Unmarshal([]byte(_rft), &refTkn)
+	if err != nil {
+		return nil, err
+	}
+
+	_iat := time.Now().Unix()
+	_exp := _iat
+
+	_exp += int64(60 * 60 * 24)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"usr": refTkn.Profile.FullName,
+		"iss": node,
+		"act": refTkn.UserName,
+		"sid": refTkn.Profile.ID,
+		"jit": strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1),
+		"iat": _iat,
+		"exp": int64(60 * 60 * 24),
+		"sys": "ref-tk",
+	})
+
+	// fmt.Print(prof)
+
+	rsa, err := common.ReadPrivateKey("./1011.perm")
+
+	tokenString, err := token.SignedString(rsa)
+	if err != nil {
+		return nil, err
+	}
+
+	_refreshToken, err := createRefreshToken(s, &refTkn)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SignInResponse{
+		SmartID:      refTkn.Profile.ID,
+		Token:        tokenString,
+		RefreshToken: _refreshToken,
+	}
+	return response, nil
+
 }
 
 func (s *authServiceImp) Verify(activate *ActivateModel) (interface{}, error) {
@@ -194,4 +258,18 @@ func (s *authServiceImp) ChangePassword(pwd *ChangePasswordModel) (bool, error) 
 
 func (s *authServiceImp) ConfirmVerify(cont *VerifyContact) (bool, error) {
 	return false, nil
+}
+
+func createRefreshToken(s *authServiceImp, _rf *RefreshToken) (string, error) {
+	_code := strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1)
+	_json, err := json.Marshal(_rf)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = s.repo.CreateRefreshToken(_code, _json, 60*60*24*180)
+	if err != nil {
+		return "", errors.New("Create refresh token is failed")
+	}
+	return _code, nil
 }

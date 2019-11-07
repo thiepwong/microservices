@@ -28,6 +28,8 @@ type AuthRepository interface {
 	UpdateProfileContact(contact string, smartID uint64, contactType int) (bool, error)
 	ReadPassword(string) (*UserModel, error)
 	WritePassword(string, string) (bool, error)
+	CreateRefreshToken(string, interface{}, time.Duration) (bool, error)
+	ReadRefreshToken(string) (string, error)
 }
 
 type authRepositoryContext struct {
@@ -235,4 +237,22 @@ func (a *authRepositoryContext) WritePassword(username string, pwd string) (bool
 		return false, err
 	}
 	return true, nil
+}
+
+func (a *authRepositoryContext) CreateRefreshToken(key string, value interface{}, ttl time.Duration) (bool, error) {
+	err := a.redis.Client.Set(key, value, ttl*1000000000).Err()
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (a *authRepositoryContext) ReadRefreshToken(refreshToken string) (string, error) {
+	val, err := a.redis.Client.Get(refreshToken).Result()
+	if err != nil {
+		return "", errors.New("Your refresh token is expired, please sign in with your username and password")
+	}
+	a.redis.Client.Del(refreshToken).Result()
+	return val, nil
 }

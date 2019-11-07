@@ -43,6 +43,8 @@ func (r *AuthRoute) BeforeActivation(b mvc.BeforeActivation) {
 
 	// Create new password
 	b.Handle("POST", "/create-new-password", "PostCreateNewPassword")
+
+	b.Handle("GET", "/refresh-token/{rft:string}", "GetRefreshToken")
 }
 
 func (r *AuthRoute) PostSignIn() {
@@ -59,6 +61,16 @@ func (r *AuthRoute) PostSignIn() {
 	}
 
 	res, e := r.Service.SignIn(&_loginModel)
+	if e != nil {
+		r.Response(500, e.Error(), nil)
+		return
+	}
+
+	r.Response(200, "", res)
+}
+func (r *AuthRoute) GetRefreshToken(rft string) {
+
+	res, e := r.Service.SignInViaRefreshToken(rft)
 	if e != nil {
 		r.Response(500, e.Error(), nil)
 		return
