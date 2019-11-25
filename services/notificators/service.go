@@ -191,8 +191,9 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 	// 3 => Send a normal sms without any OTP for registered member
 	// 4 => Send to any one with any content
 	// 5 => Send OTP from mobilepools data
+	// 6 => Create OTP with profile and send to mobile
 	var _otp *common.OtpModel
-	if sms.Lang == "" {
+	if sms.Lang == "" || sms.Lang == "LangCode" {
 		sms.Lang = "vi"
 	}
 	switch sms.Type {
@@ -306,7 +307,33 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+		return res, nil
+	case 6:
+		u, err := s.repo.ReadUserAccount(sms.Mobile)
+		if err != nil || u.Status != 1 {
+			return nil, err
+		}
 
+		if sms.TTL == 0 {
+			sms.TTL = 120
+		}
+		_template, err := common.ReadTemplate(fmt.Sprintf("./templates/%s/forgot_password_otp.msg", sms.Lang))
+		if err != nil {
+			return nil, errors.New("Sms template not found! Please use custom template to send")
+		}
+
+		_otp = common.GenerateOTP(sms.Mobile, 6, sms.TTL)
+		_sms := fmt.Sprintf(_template, _otp.ID, _otp.TTL)
+		_json, err := json.Marshal(_otp)
+		if err != nil {
+			return false, err
+		}
+		s.repo.SaveOTP(_otp.ID, _json, _otp.TTL)
+
+		res, err := smsSender(sms.Mobile, _sms, _irisToken, &s.conf.SmsIris)
+		if err != nil {
+			return nil, err
+		}
 		return res, nil
 	}
 

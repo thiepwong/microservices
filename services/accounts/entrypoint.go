@@ -15,7 +15,7 @@ func NewService(cfg *common.Config) *iris.Application {
 		ctx.Next()
 	}
 
-	app.Logger().SetLevel("debug")
+	app.Logger().SetLevel("error")
 	RegisterRoute(app, crs, cfg)
 	// app.Get("/", func(ctx iris.Context) {
 	// 	ctx.Text("Xin chao nhe! Day la trang tao account")

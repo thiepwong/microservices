@@ -14,7 +14,7 @@ func NewService(cfg *common.Config) *iris.Application {
 		ctx.Header("Access-Control-Allow-Headers", "Access-Control-Allow-Origin,Content-Type, Authorization")
 		ctx.Next()
 	}
-	app.Logger().SetLevel("debug")
+	app.Logger().SetLevel("error")
 	RegisterRoute(app, crs, cfg)
 	return app
 }

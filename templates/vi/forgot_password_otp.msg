@@ -1,0 +1,1 @@
+Smartlife: Sử dụng mã OTP: %s để thay đổi mật khẩu, mã OTP sẽ hết hạn sau %d giây

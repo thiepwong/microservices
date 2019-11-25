@@ -23,6 +23,7 @@ type AuthService interface {
 	ChangePassword(*ChangePasswordModel) (bool, error)
 	ConfirmVerify(*VerifyContact) (bool, error)
 	SignInViaRefreshToken(string) (interface{}, error)
+	ForgotPassword(string, string, string) (bool, error)
 }
 
 type authServiceImp struct {
@@ -258,6 +259,25 @@ func (s *authServiceImp) ChangePassword(pwd *ChangePasswordModel) (bool, error) 
 
 func (s *authServiceImp) ConfirmVerify(cont *VerifyContact) (bool, error) {
 	return false, nil
+}
+
+func (s *authServiceImp) ForgotPassword(username string, password string, code string) (bool, error) {
+
+	res, err := s.repo.ReadOTP(code)
+	if err != nil {
+		return false, err
+	}
+	var _otp = &OtpModel{}
+	err = json.Unmarshal([]byte(res), _otp)
+	if err != nil {
+		return false, err
+	}
+	_pwd, err := common.Hash(password, common.Salt)
+	if err != nil {
+		return false, err
+	}
+
+	return s.repo.WritePassword(username, _pwd)
 }
 
 func createRefreshToken(s *authServiceImp, _rf *RefreshToken) (string, error) {

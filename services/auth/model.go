@@ -149,3 +149,9 @@ type RefreshToken struct {
 	UserName string        `json:"username"`
 	Profile  *ProfileModel `json:"profile"`
 }
+
+type ForgotPassword struct {
+	Username string `json:"username"`
+	Code     string `json:"code"`
+	Password string `json:"password"`
+}

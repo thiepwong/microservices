@@ -154,17 +154,24 @@ func (r *AuthRoute) PostChangePassword() {
 
 func (r *AuthRoute) PostCreateNewPassword() {
 
-	var _cont VerifyContact
+	var _pwd ForgotPassword
 
-	err := r.Ctx.ReadJSON(&_cont)
+	err := r.Ctx.ReadJSON(&_pwd)
 	if err != nil {
 		r.Response(416, "Request is invalid!", nil)
 		return
 	}
-
-	if _cont.Contact == "" || _cont.Code == "" {
-		r.Response(428, "Contact infomation and verify code is required!", nil)
+	if _pwd.Username == "" || _pwd.Code == "" || _pwd.Password == "" {
+		r.Response(428, "Username, new password infomation and verify code is required!", nil)
 		return
 	}
 
+	res, err := r.Service.ForgotPassword(_pwd.Username, _pwd.Password, _pwd.Code)
+
+	if err != nil {
+		r.Response(500, err.Error(), err)
+		return
+	}
+
+	r.Response(200, "", res)
 }

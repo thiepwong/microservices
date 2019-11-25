@@ -29,6 +29,7 @@ type NotificatorRepository interface {
 	ReadMobilePool(mobile string) (*MobileProfileModel, error)
 
 	ReadUserProfile(string) (*UserModel, *ProfileModel, error)
+	ReadUserAccount(string) (*UserModel, error)
 }
 
 type notificatorRepositoryContext struct {
@@ -141,4 +142,13 @@ func (n *notificatorRepositoryContext) ReadUserProfile(username string) (*UserMo
 	_ = n.mgoSession.DB(n.conf.Database.Mongo.Database).C("profiles").FindId(_usr.ProfileID).One(&_prf)
 
 	return &_usr, &_prf, nil
+}
+
+func (n *notificatorRepositoryContext) ReadUserAccount(username string) (*UserModel, error) {
+	var _usr UserModel
+	err := n.mgoSession.DB(n.conf.Database.Mongo.Database).C("users").FindId(username).One(&_usr)
+	if err != nil {
+		return nil, errors.New("This username is not exist!")
+	}
+	return &_usr, nil
 }

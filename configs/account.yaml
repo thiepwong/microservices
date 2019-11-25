@@ -18,12 +18,12 @@ Database:
     Password: Esml429fb
     Database: 9
   Mongo:
-    Host: 171.244.49.164
-    Port: 2688
+    Host: 125.212.239.226
+    Port: 27017
     Database: smartid
-    Username: admin
-    Password: azuasml123456sml
-    Auth: admin
+    Username: 
+    Password: 
+    Auth: 
 Option:
   SmsUrl: 
   SmsApiToken: 

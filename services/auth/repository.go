@@ -30,6 +30,7 @@ type AuthRepository interface {
 	WritePassword(string, string) (bool, error)
 	CreateRefreshToken(string, interface{}, time.Duration) (bool, error)
 	ReadRefreshToken(string) (string, error)
+	ReadOTP(code string) (string, error)
 }
 
 type authRepositoryContext struct {
@@ -254,5 +255,14 @@ func (a *authRepositoryContext) ReadRefreshToken(refreshToken string) (string, e
 		return "", errors.New("Your refresh token is expired, please sign in with your username and password")
 	}
 	a.redis.Client.Del(refreshToken).Result()
+	return val, nil
+}
+
+func (a *authRepositoryContext) ReadOTP(code string) (string, error) {
+	val, err := a.redis.Client.Get(code).Result()
+	if err != nil {
+		return "", errors.New("Your otp is expired, please try a gain!")
+	}
+	a.redis.Client.Del(code).Result()
 	return val, nil
 }

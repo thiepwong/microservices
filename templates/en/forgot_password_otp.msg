@@ -1,0 +1,1 @@
+Smartlife: Please use this OTP: %s to change your password, it will be expired after %d seconds
