@@ -191,7 +191,7 @@ func (s *notificatorServiceImpl) SendSMS(sms *SmsModel) (interface{}, error) {
 	// 3 => Send a normal sms without any OTP for registered member
 	// 4 => Send to any one with any content
 	// 5 => Send OTP from mobilepools data
-	// 6 => Create OTP with profile and send to mobile
+	// 6 => Create OTP with Account info and send to mobile
 	var _otp *common.OtpModel
 	if sms.Lang == "" || sms.Lang == "LangCode" {
 		sms.Lang = "vi"

@@ -72,33 +72,33 @@ func startAccount() {
 			os.Exit(10)
 		}
 		serv := accounts.NewService(conf)
-		serv.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+		serv.Run(iris.Addr(fmt.Sprintf(":%d", conf.Service.Port)), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }
 
 func startAuth() {
 	go func() {
-		_cfgPath := "configs/account.yaml"
+		_cfgPath := "configs/auth.yaml"
 		conf, es := common.LoadConfig(_cfgPath)
 		if es != nil {
 			os.Exit(10)
 		}
 		serv := auth.NewService(conf)
-		serv.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
+		serv.Run(iris.Addr(fmt.Sprintf(":%d", conf.Service.Port)), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }
 
 func startNotificator() {
 	go func() {
-		_cfgPath := "configs/account.yaml"
+		_cfgPath := "configs/notify.yaml"
 		conf, es := common.LoadConfig(_cfgPath)
 		if es != nil {
 			os.Exit(10)
 		}
 		serv := notificators.NewService(conf)
-		serv.Run(iris.Addr(":8082"), iris.WithoutServerError(iris.ErrServerClosed))
+		serv.Run(iris.Addr(fmt.Sprintf(":%d", conf.Service.Port)), iris.WithoutServerError(iris.ErrServerClosed))
 
 	}()
 }

@@ -13,17 +13,17 @@ Database:
     DbName: spin_app
     Schema:
   Redis:
-    Host: 103.101.162.65
-    Port: 25355 
-    Password: Esml429fb
+    Host: 125.212.239.226
+    Port: 55355 
+    Password: redis429fb
     Database: 9
   Mongo:
     Host: 125.212.239.226
-    Port: 27017
+    Port: 2557 
     Database: smartid
-    Username: 
-    Password: 
-    Auth: 
+    Username: admin
+    Password: azuasml123456sml
+    Auth: admin
 Option:
   SmsUrl: 
   SmsApiToken: 
