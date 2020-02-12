@@ -129,7 +129,7 @@ func (s *notificatorServiceImpl) SendEmail(mail *MailModel) (bool, error) {
 
 	case 4:
 		// Create a mail verify code with code
-		_code := uuid.Must(uuid.NewV4())
+		_code := uuid.Must(uuid.NewV4(), errors.New("error"))
 		_usr, _pro, err := s.repo.ReadUserProfile(mail.Mail)
 		_usr.Password = ""
 		_json, err := json.Marshal(_usr)

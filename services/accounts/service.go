@@ -48,7 +48,7 @@ func (s *accountServiceImp) Register(register *RegisterModel) (interface{}, erro
 		return nil, err
 	case 1:
 		// Is email type username
-		_code := uuid.Must(uuid.NewV4())
+		_code := uuid.Must(uuid.NewV4(), errors.New("error"))
 		register.VerifyCode = _code.String()
 		register.Profile.Email = register.Username
 		break
@@ -90,7 +90,7 @@ func (s *accountServiceImp) UpdateEmail(prof *AuthUpdate) (bool, error) {
 		return false, err
 	}
 
-	_code := uuid.Must(uuid.NewV4())
+	_code := uuid.Must(uuid.NewV4(), errors.New("error"))
 	var _m EmailProfileModel
 	if _user.ID == "" {
 		// Cho phep update du lieu vao profile

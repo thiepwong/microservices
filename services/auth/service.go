@@ -62,7 +62,7 @@ func (s *authServiceImp) SignIn(signin *SignInModel) (interface{}, error) {
 		"iss": node,
 		"act": acc.Username,
 		"sid": acc.ProfileID,
-		"jit": strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1),
+		"jit": strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1),
 		"iat": _iat,
 		"exp": _exp,
 		"sys": signin.System,
@@ -118,7 +118,7 @@ func (s *authServiceImp) SignInViaRefreshToken(refreshToken string) (interface{}
 		"iss": node,
 		"act": refTkn.UserName,
 		"sid": refTkn.Profile.ID,
-		"jit": strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1),
+		"jit": strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1),
 		"iat": _iat,
 		"exp": int64(60 * 60 * 24),
 		"sys": "ref-tk",
@@ -281,7 +281,7 @@ func (s *authServiceImp) ForgotPassword(username string, password string, code s
 }
 
 func createRefreshToken(s *authServiceImp, _rf *RefreshToken) (string, error) {
-	_code := strings.Replace(uuid.Must(uuid.NewV4()).String(), "-", "", -1)
+	_code := strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1)
 	_json, err := json.Marshal(_rf)
 	if err != nil {
 		return "", err
