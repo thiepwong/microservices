@@ -34,8 +34,8 @@ Option:
     Port: 587
     Email: no-reply@smartlifevn.com
     Password: 1q2w3e4r5t
-  ActivateURL: http://localhost:8081/auth/activate
-  UpdateContactURL: http://localhost:8081/auth/update-contact
+  ActivateURL: http://125.212.239.226:8081/auth/activate
+  UpdateContactURL: http://125.212.239.226:8081/auth/update-contact
 SmsIris:
   Host: https://smsapi2.irismedia.vn/
   SignInRoute: oauth2/token

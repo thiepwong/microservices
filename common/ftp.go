@@ -33,7 +33,7 @@ func FtpWriteText(cfg *Config, folder string, data string) (string, error) {
 	}
 
 	str := bytes.NewBufferString(data)
-	_name := fmt.Sprintf("%s.bin", strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1))
+	_name := fmt.Sprintf("%s.bin", strings.Replace(uuid.Must(uuid.NewV4(), nil).String(), "-", "", -1))
 	err = c.Stor(_name, str)
 	if err != nil {
 		return "", err
@@ -61,7 +61,7 @@ func FtpWriteImage(cfg *Config, folder string, data string) (string, error) {
 		}
 		c.ChangeDir(_path)
 	}
-	_name := strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1)
+	_name := strings.Replace(uuid.Must(uuid.NewV4(), nil).String(), "-", "", -1)
 	return saveImage(_name, data, c)
 
 }

@@ -70,7 +70,7 @@ func (n *notificatorRepositoryContext) RemoveOTP(otp *OtpModel) (bool, error) {
 
 func (n *notificatorRepositoryContext) ReadMailActivatedCode(email string) (register *RegisterModel, err error) {
 
-	_code := strings.Replace(uuid.Must(uuid.NewV4(), errors.New("error")).String(), "-", "", -1)
+	_code := strings.Replace(uuid.Must(uuid.NewV4(), nil).String(), "-", "", -1)
 	if err != nil {
 		return nil, errors.New("Cannot create activate code!")
 	}
